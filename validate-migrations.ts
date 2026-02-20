@@ -33,7 +33,7 @@ const results: ValidationResult[] = [];
 
 async function checkTable(tableName: string) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from(tableName)
       .select('*')
       .limit(1);
@@ -48,18 +48,19 @@ async function checkTable(tableName: string) {
       status: 'PASS',
       details: `Tabela criada e acessível`,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     results.push({
       name: `Table: ${tableName}`,
       status: 'FAIL',
-      details: `Erro ao acessar: ${error.message}`,
+      details: `Erro ao acessar: ${message}`,
     });
   }
 }
 
 async function checkFunction(functionName: string) {
   try {
-    const { data, error } = await supabase.rpc(functionName);
+    const { error } = await supabase.rpc(functionName);
 
     if (error) {
       throw error;
@@ -70,9 +71,9 @@ async function checkFunction(functionName: string) {
       status: 'PASS',
       details: `Função executada com sucesso`,
     });
-  } catch (error: any) {
+  } catch (error) {
     // Funções podem ter requirements, então WARN é ok
-    const errorMsg = error.message || String(error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
     const status = errorMsg.includes('does not exist') ? 'FAIL' : 'WARN';
 
     results.push({
@@ -85,7 +86,7 @@ async function checkFunction(functionName: string) {
 
 async function checkAlertConfigs() {
   try {
-    const { data, error, count } = await supabase
+    const { error, count } = await supabase
       .from('alerts_config')
       .select('*', { count: 'exact' })
       .limit(100);
@@ -95,7 +96,7 @@ async function checkAlertConfigs() {
     }
 
     const expectedCount = 7; // 7 default alerts
-    if (count! >= expectedCount) {
+    if (count !== null && count >= expectedCount) {
       results.push({
         name: `Seed: Default alerts`,
         status: 'PASS',
@@ -108,11 +109,12 @@ async function checkAlertConfigs() {
         details: `${count} regras criadas (esperado: ${expectedCount})`,
       });
     }
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     results.push({
       name: `Seed: Default alerts`,
       status: 'FAIL',
-      details: `Erro ao verificar: ${error.message}`,
+      details: `Erro ao verificar: ${message}`,
     });
   }
 }

@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 
-type TimezoneMode = 'LA' | 'BR'
+export type TimezoneMode = 'LA' | 'BR'
 
-interface TimezoneContextType {
+export interface TimezoneContextType {
   timeZoneMode: TimezoneMode
   setTimeZoneMode: (mode: TimezoneMode) => void
 }
@@ -20,7 +21,7 @@ export const TimezoneProvider: React.FC<{ children: ReactNode }> = ({ children }
   )
 }
 
-export const useTimezone = () => {
+export function useTimezone() {
   const context = useContext(TimezoneContext)
   if (!context) {
     throw new Error('useTimezone must be used within TimezoneProvider')
