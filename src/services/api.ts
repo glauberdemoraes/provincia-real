@@ -4,9 +4,108 @@ import type { NuvemshopOrder, MetaCampaign, DateRange } from '@/types'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 /**
- * Fetch orders from NuvemShop via Supabase RPC sync_orders_to_cache
- * This function synchronizes orders from NuvemShop to the cache table
- * and includes utm_campaign extracted from landing_url
+ * Extract UTM parameter from URL
+ * landing_url example: "https://provinciadores.com.br?utm_source=...&utm_campaign=..."
+ */
+function extractUtmParam(url: string | null, paramName: string): string | null {
+  if (!url) return null
+  try {
+    const urlObj = new URL(url)
+    return urlObj.searchParams.get(paramName)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Sync and save orders: Edge Function → Database
+ * Calls the real edge function, then saves results to orders_cache
+ */
+async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
+  try {
+    const startStr = range.start.toISOString().split('T')[0]
+    const endStr = range.end.toISOString().split('T')[0]
+
+    console.log(`📦 Fetching from Edge Function (fetch-nuvemshop-orders)...`)
+
+    // 1. Call edge function to get REAL data from NuvemShop API
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-nuvemshop-orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        start_date: startStr,
+        end_date: endStr,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Edge function error: ${response.status}`)
+    }
+
+    const edgeData = await response.json()
+    const edgeOrders = edgeData.result || []
+
+    console.log(`📥 Edge function returned ${edgeOrders.length} orders`)
+
+    if (edgeOrders.length === 0) {
+      console.warn('⚠️ No orders returned from edge function')
+      return []
+    }
+
+    // 2. Insert/upsert each order into orders_cache with UTM extracted
+    const savedOrders: NuvemshopOrder[] = []
+
+    for (const order of edgeOrders) {
+      const utm_campaign = extractUtmParam(order.landing_url, 'utm_campaign')
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('orders_cache')
+        .upsert(
+          {
+            id: order.id,
+            total: order.total,
+            subtotal: order.subtotal,
+            shipping_cost_owner: order.shipping_cost_owner,
+            payment_status: order.payment_status,
+            shipping_status: order.shipping_status,
+            billing_name: order.billing_name,
+            contact_phone: order.contact_phone,
+            billing_phone: order.billing_phone,
+            landing_url: order.landing_url,
+            utm_source: extractUtmParam(order.landing_url, 'utm_source'),
+            utm_medium: extractUtmParam(order.landing_url, 'utm_medium'),
+            utm_campaign,
+            utm_content: extractUtmParam(order.landing_url, 'utm_content'),
+            utm_term: extractUtmParam(order.landing_url, 'utm_term'),
+            products: order.products,
+            order_created_at: order.created_at,
+            fetched_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        )
+        .select()
+
+      if (insertError) {
+        console.error(`❌ Error saving order ${order.id}:`, insertError)
+      } else if (inserted && inserted.length > 0) {
+        savedOrders.push(inserted[0])
+      }
+    }
+
+    console.log(`✅ Saved ${savedOrders.length} orders to orders_cache`)
+    return savedOrders
+  } catch (err) {
+    console.error('❌ syncAndSaveOrders error:', err)
+    return []
+  }
+}
+
+/**
+ * Fetch orders from NuvemShop via Edge Function → Database
+ * Performs real-time sync and returns data from cache
  */
 export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
   try {
@@ -15,21 +114,18 @@ export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
 
     console.log(`📦 Sincronizando NuvemShop orders from ${startStr} to ${endStr}...`)
 
-    // 1. Sincronizar dados do Supabase via RPC
-    const { data: syncResult, error: syncError } = await supabase.rpc('sync_orders_to_cache', {
-      p_start_date: startStr,
-      p_end_date: endStr,
-    })
+    // 1. Sync and save orders from edge function
+    const syncedOrders = await syncAndSaveOrders(range)
 
-    if (syncError) {
-      console.warn('⚠️ Sync warning:', syncError)
-      // Continuar mesmo se sync falhar (fallback para cache)
-    } else {
-      console.log(`✅ Sync result:`, syncResult)
+    // 2. If sync worked, return synced data
+    if (syncedOrders.length > 0) {
+      console.log(`✅ Returning ${syncedOrders.length} synced orders`)
+      return syncedOrders
     }
 
-    // 2. Buscar dados do banco (já com utm_campaign preenchido!)
-    const { data: orders, error } = await supabase
+    // 3. Fallback: query from cache if sync returned empty
+    console.log(`⚠️ Sync returned empty, trying cache...`)
+    const { data: cachedOrders, error } = await supabase
       .from('orders_cache')
       .select('*')
       .gte('order_created_at', range.start.toISOString())
@@ -37,12 +133,12 @@ export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
       .order('order_created_at', { ascending: false })
 
     if (error) {
-      console.error('❌ Error fetching orders from cache:', error)
+      console.error('❌ Cache query error:', error)
       return []
     }
 
-    console.log(`✅ Fetched ${orders?.length || 0} orders from cache (with utm_campaign)`)
-    return orders || []
+    console.log(`✅ Fetched ${cachedOrders?.length || 0} orders from cache`)
+    return cachedOrders || []
   } catch (err) {
     console.error('❌ fetchOrders error:', err)
     return []

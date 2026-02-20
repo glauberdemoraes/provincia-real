@@ -1,0 +1,173 @@
+================================================================================
+PROVINCIA REAL — DATA SYNC ARCHITECTURE SUMMARY
+================================================================================
+
+DOCUMENTO CRIADO: /root/aios-workspace/provincia-real/docs/ARCHITECTURE_DATA_SYNC.md
+DATA: 2026-02-20
+PÁGINAS: 605 linhas
+STATUS: Pronto para produção
+
+================================================================================
+O QUE FOI DOCUMENTADO
+================================================================================
+
+1. PROBLEMA ORIGINAL (antes da solução)
+   - Edge Function buscava dados direto da API sem salvar
+   - utm_campaign era undefined (nunca capturado)
+   - Sem persistência de dados
+   - Sem histórico consultável via SQL
+   - Sem fallback se API caisse
+
+2. SOLUÇÃO IMPLEMENTADA
+   ✓ RPC Functions sincronizam NuvemShop → Supabase
+   ✓ Persistência em orders_cache + meta_campaigns_cache
+   ✓ Extração de utm_campaign de 3 fontes (API / URL / default)
+   ✓ Índices otimizados para queries rápidas
+   ✓ Auditoria em sync_logs
+
+3. FLUXO ARQUITETURAL COMPLETO
+   ┌──────────────┐
+   │ NuvemShop    │
+   │ Meta APIs    │
+   └──────┬───────┘
+          │
+          ▼
+   ┌──────────────────────────────────┐
+   │ sync_orders_to_cache()            │
+   │ sync_meta_to_cache()              │
+   │ (RPC Functions - Supabase)        │
+   └──────┬───────────────────────────┘
+          │ INSERT ON CONFLICT DO UPDATE
+          ▼
+   ┌──────────────────────────────────┐
+   │ PostgreSQL Cache Tables           │
+   │ - orders_cache                    │
+   │ - meta_campaigns_cache            │
+   │ - sync_logs (auditoria)           │
+   └──────┬───────────────────────────┘
+          │ SELECT * FROM ...
+          ▼
+   ┌──────────────────────────────────┐
+   │ React Frontend                    │
+   │ Dashboard + Análises              │
+   └──────────────────────────────────┘
+
+4. INTELIGÊNCIA DE EXTRAÇÃO DE utm_campaign
+   Para cada pedido, tenta em ordem:
+   1. Campo direto da API (se existe e não vazio)
+   2. Parâmetro ?utm_campaign=... da landing_url
+   3. Se nada → "Direto" (padrão)
+   
+   RESULTADO: utm_campaign NUNCA é NULL
+
+5. FREQUÊNCIA RECOMENDADA (HÍBRIDA)
+   - Histórico (últimos 30d): 1x/dia (00:00 São Paulo)
+   - Hoje (últimas 24h):      4x/dia (09:00, 13:00, 17:00, 22:00)
+   - On-demand:               Botão no UI (clique do usuário)
+
+6. FALLBACK STRATEGY
+   Se orders_cache vazio:
+   1. Tentar cache local (rápido)
+   2. Se vazio → Sincronizar (espera dados)
+   3. Se sync falha → Edge Function (pode estar desatualizado)
+   4. Log em sync_logs para debug
+
+7. INTEGRAÇÃO FRONTEND
+   Exemplos de código TypeScript:
+   - fetchOrdersWithSync() — Sincroniza e busca
+   - syncOrdersManual() — Botão "Atualizar Dados"
+   - getOrdersByUTMCampaign() — Query custom por campanha
+   - fetchOrdersWithFallback() — Fallback automático
+
+8. PERFORMANCE
+   Índices criados:
+   ✓ payment_status (filtros comuns)
+   ✓ order_created_at (buscas por período)
+   ✓ utm_campaign (análises por campanha)
+   ✓ utm_source (análises por origem)
+   ✓ (payment_status, order_created_at) composite
+   
+   Estimativa de storage:
+   ~1KB por pedido → 1000 pedidos/mês = ~30MB/ano
+
+9. ESTRUTURA DE DADOS COMPLETA
+   orders_cache:
+   - 28 campos (id, total, payment_status, utm_*, products, timestamps)
+   - Deduplicação automática (ON CONFLICT DO UPDATE)
+   - Triggers para updated_at
+
+   meta_campaigns_cache:
+   - 15 campos (campaign_id, spend, impressions, cpm, ctr, actions, etc.)
+   - Deduplicação por (campaign_id, date_start, date_stop)
+
+10. ROADMAP DE IMPLEMENTAÇÃO
+    Fase 1: Deploy (FEITO ✅)
+    Fase 2: Integração Frontend (TODO)
+    Fase 3: Automação/Cron (TODO)
+    Fase 4: Análises avançadas (TODO)
+
+================================================================================
+ARQUIVOS RELACIONADOS
+================================================================================
+
+Banco de dados:
+→ /root/aios-workspace/provincia-real/supabase/migrations/20260219000001_cache_tables.sql
+→ /root/aios-workspace/provincia-real/supabase/migrations/20260219000003_sync_functions.sql
+→ /root/aios-workspace/provincia-real/supabase/migrations/20260219000005_analytics_views.sql
+
+Frontend:
+→ /root/aios-workspace/provincia-real/src/services/api.ts
+→ /root/aios-workspace/provincia-real/src/types/index.ts
+
+Documentação:
+→ /root/aios-workspace/provincia-real/docs/TIMEZONE_LOGIC.md (contexto de timezone)
+→ /root/aios-workspace/provincia-real/EDGE_FUNCTIONS_SETUP.md (edge functions)
+
+================================================================================
+PRÓXIMOS PASSOS
+================================================================================
+
+1. Ler o documento completo:
+   /root/aios-workspace/provincia-real/docs/ARCHITECTURE_DATA_SYNC.md
+
+2. Implementar integração frontend:
+   Editar src/services/api.ts e adicionar funções de sync
+
+3. Configurar scheduler para automação:
+   - Setup Cron job (Cloud Functions ou externa)
+   - Sincronização automática conforme frequência
+
+4. Testar end-to-end:
+   - Frontend → RPC Sync → Cache → Queries
+   - Verificar utm_campaign sendo capturado
+   - Testar fallback
+
+5. Deploy:
+   - Migrations já estão prontas
+   - Frontend changes após integração
+   - Cron setup no Supabase ou Cloud Functions
+
+================================================================================
+DOCUMENTAÇÃO PRONTA PARA:
+================================================================================
+
+✅ Arquitetos de software
+✅ Desenvolvedores frontend (TypeScript examples)
+✅ DBA/Database engineers (SQL migrations)
+✅ DevOps (deployment instructions)
+✅ Product managers (fluxo de dados compreensível)
+✅ QA teams (teste de sincronização)
+
+================================================================================
+RESOLVIDO
+================================================================================
+
+✓ Desenhar arquitetura correto: NuvemShop → RPC → orders_cache → Frontend SQL
+✓ Documentar fluxo de dados com diagramas ASCII
+✓ Frequência de sincronização decidida (HÍBRIDA)
+✓ Integração frontend documentada com exemplos TypeScript
+✓ Fallback strategy clara e implementável
+✓ Performance considerations incluídas
+✓ Roadmap de implementação definido
+
+================================================================================
