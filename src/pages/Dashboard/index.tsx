@@ -163,34 +163,37 @@ export default function Dashboard() {
 
     return (
       <div
-        className={`p-6 rounded-xl border backdrop-blur ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800/50 hover:bg-slate-900/60' : 'bg-white/50 border-slate-200/50 hover:bg-white/70'} transition-all`}
+        className={`p-6 rounded-2xl border backdrop-blur overflow-hidden group hover:shadow-xl transition-all duration-300 ${theme === 'dark' ? 'bg-gradient-to-br from-slate-800/20 to-slate-900/30 border-slate-700/30 hover:from-slate-800/40 hover:to-slate-900/50' : 'bg-gradient-to-br from-white/60 to-blue-50/40 border-slate-200/60 hover:from-white/80 hover:to-blue-100/40'}`}
       >
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
-            <Icon className="w-5 h-5 text-blue-500" />
-          </div>
-          {trend !== undefined && (
-            <div className={`flex items-center gap-1 ${trendColor}`}>
-              {trend > 0 ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : trend < 0 ? (
-                <TrendingDown className="w-4 h-4" />
-              ) : null}
-              {trend !== 0 && <span className="text-xs font-bold">{Math.abs(trend)}%</span>}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all" />
+        <div className="relative">
+          <div className="flex items-start justify-between mb-4">
+            <div className={`p-3 rounded-xl ${theme === 'dark' ? 'bg-blue-900/40 border border-blue-800/30' : 'bg-blue-100/60 border border-blue-200/40'}`}>
+              <Icon className="w-5 h-5 text-blue-600" />
             </div>
-          )}
+            {trend !== undefined && (
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${trendColor} ${trendColor === 'text-emerald-500' ? theme === 'dark' ? 'bg-emerald-950/40' : 'bg-emerald-100/40' : trendColor === 'text-red-500' ? theme === 'dark' ? 'bg-red-950/40' : 'bg-red-100/40' : theme === 'dark' ? 'bg-slate-800/40' : 'bg-slate-100/40'}`}>
+                {trend > 0 ? (
+                  <TrendingUp className="w-4 h-4" />
+                ) : trend < 0 ? (
+                  <TrendingDown className="w-4 h-4" />
+                ) : null}
+                {trend !== 0 && <span className="text-xs font-bold">{Math.abs(trend)}%</span>}
+              </div>
+            )}
+          </div>
+          <p className={`text-xs font-semibold mb-2 uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>
+            {label}
+          </p>
+          <p className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{formatted}</p>
         </div>
-        <p className={`text-sm font-medium mb-1 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-          {label}
-        </p>
-        <p className="text-2xl font-bold text-blue-600">{formatted}</p>
       </div>
     )
   }
 
   return (
     <div
-      className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50' : 'bg-gradient-to-br from-slate-50 via-white to-slate-50 text-slate-900'} transition-colors`}
+      className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-slate-50' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50 text-slate-900'} transition-colors`}
     >
       {/* Navbar */}
       <nav
@@ -198,16 +201,16 @@ export default function Dashboard() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 group cursor-pointer">
             <div
-              className={`p-2.5 rounded-lg ${theme === 'dark' ? 'bg-blue-900/30 border border-blue-800/50' : 'bg-blue-50 border border-blue-200'}`}
+              className={`p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 border ${theme === 'dark' ? 'border-blue-500/50' : 'border-blue-400/50'} shadow-lg shadow-blue-500/30 group-hover:shadow-xl group-hover:shadow-blue-500/50 transition-all`}
             >
-              <TrendingUp className="w-6 h-6 text-blue-600" />
+              <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black">Provincia Real</h1>
-              <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                Cockpit de Vendas
+              <h1 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Provincia Real</h1>
+              <p className={`text-xs font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                📊 Dashboard de Vendas
               </p>
             </div>
           </div>
@@ -305,16 +308,16 @@ export default function Dashboard() {
         {/* Header com status */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-black mb-2">Dashboard</h2>
-            <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-              {metrics?.period.label} • {timeZoneMode} • Fuso Los Angeles (UTC-8)
+            <h2 className="text-4xl font-black mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Analytics & Insights</h2>
+            <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+              📈 {metrics?.period.label} • {timeZoneMode === 'LA' ? '🗽 Los Angeles' : '🇧🇷 São Paulo'} • Fuso Los Angeles (UTC-8)
             </p>
           </div>
           {lastUpdate && (
-            <div className={`text-right text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>
-              <p>Atualizado em</p>
-              <p className="font-mono">
-                {lastUpdate.toLocaleTimeString('pt-BR')}
+            <div className={`text-right text-xs font-mono ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>
+              <p className="uppercase tracking-widest text-slate-500 text-xs mb-1">Atualizado</p>
+              <p className={`text-lg font-black ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>
+                {lastUpdate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
           )}
@@ -333,10 +336,13 @@ export default function Dashboard() {
         ) : metrics ? (
           <>
             {/* Row 1: Orders & Revenue */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                📊 Vendas
-              </h3>
+            <div className="space-y-4 mt-8">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full" />
+                <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">
+                  📊 Vendas
+                </h3>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricBox
                   label="Pedidos Gerados"
@@ -368,10 +374,13 @@ export default function Dashboard() {
             </div>
 
             {/* Row 2: Costs & Profit */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                💰 Lucratividade
-              </h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-emerald-600 to-green-600 rounded-full" />
+                <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">
+                  💰 Lucratividade
+                </h3>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricBox
                   label="Custo de Produtos"
@@ -397,10 +406,13 @@ export default function Dashboard() {
             </div>
 
             {/* Row 3: Marketing & ROI */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                📢 Marketing & ROI
-              </h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full" />
+                <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">
+                  📢 Marketing & ROI
+                </h3>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricBox
                   label="Gasto em Ads"
