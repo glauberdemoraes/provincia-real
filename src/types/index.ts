@@ -217,4 +217,59 @@ export interface DashboardData {
   roas: number // geral: vendas pagas / total adSpend
   roi: number // geral: lucro líquido / total custos × 100
   campaigns: AdCampaignMetrics[]
+
+  // Wave 1: 25 KPIs em 5 categorias
+  traction?: {
+    aov: number // Ticket Médio
+    conversionRate: number // Taxa Conversão %
+    skuMix: {
+      pote680g: { revenue: number; pct: number }
+      barra400g: { revenue: number; pct: number }
+      kits: { revenue: number; pct: number }
+    }
+    kitOrdersPct: number // % pedidos com kit
+    organicPct: number // % pedidos sem utm_campaign
+  }
+
+  profitability?: {
+    mcu: number // Margem Contribuição Unitária
+    netMarginPct: number // Margem Líquida %
+    productRoi: number // ROI Produto %
+    breakeven: number // Breakeven pedidos
+  }
+
+  marketing?: {
+    cac: number // CAC
+    cpa: number // CPA (cost per action)
+    totalClicks: number // total clicks
+    totalImpressions: number // total impressions
+    avgCpcBrl: number // CPC médio em BRL
+    avgCpmBrl: number // CPM médio em BRL
+  }
+
+  retention?: {
+    avgLtv: number // LTV Médio
+    retentionRate: number // Taxa Recompra %
+    churnRate: number // Churn %
+    avgFrequency: number // Frequência Compra
+    avgRecencyDays: number // Dias desde última compra
+  }
+
+  logistics?: {
+    freeShippingImpact: number // R$ frete grátis
+    freeShippingPct: number // % pedidos frete grátis
+    gatewayFees: number // Taxa gateway (3.3%)
+  }
+
+  cockpit?: {
+    ltvCacRatio: number // LTV/CAC ratio
+    items: Array<{
+      metric: string
+      value: number
+      formatted: string
+      meta: number
+      metaFormatted: string
+      status: 'green' | 'amber' | 'red'
+    }>
+  }
 }

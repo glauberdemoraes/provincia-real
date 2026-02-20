@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo ""
+echo "🔄 Supabase Migration: customer_ltv_all View"
+echo "============================================"
+echo ""
+echo "📋 Passo 1: Abra o SQL Editor do Supabase:"
+echo "   https://app.supabase.com/project/prnshbkblddfgttsgxpt/sql"
+echo ""
+echo "📋 Passo 2: Crie uma nova query e cole o seguinte SQL:"
+echo ""
+echo "------- BEGIN SQL -------"
+cat ./supabase/migrations/20260220000004_retention_view.sql
+echo "------- END SQL -------"
+echo ""
+echo "📋 Passo 3: Clique em 'RUN' para aplicar"
+echo ""
+echo "✅ Após aplicar a migration, o dashboard terá acesso a:"
+echo "   - customer_ltv_all: Vista com TODOS os clientes"
+echo "   - Cálculos de retenção, churn, e recência"
+echo ""

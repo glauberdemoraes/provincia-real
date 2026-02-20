@@ -223,3 +223,100 @@ export async function generateMockOrders(start: Date, end: Date): Promise<Nuvems
 
   return orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
+
+/**
+ * Fetch retention metrics from customer_ltv_summary view
+ */
+export async function fetchRetentionMetrics(): Promise<{
+  avgLtv: number
+  retentionRate: number
+  churnRate: number
+  avgFrequency: number
+  avgRecencyDays: number
+}> {
+  try {
+    // Query view customer_ltv_all para TODOS os clientes (incluindo one-time)
+    const { data: ltv_data, error: ltv_error } = await supabase
+      .from('customer_ltv_all')
+      .select('order_count, lifetime_revenue, first_order_at, last_order_at')
+
+    if (ltv_error) {
+      console.error('❌ Error fetching LTV summary:', ltv_error)
+      return {
+        avgLtv: 0,
+        retentionRate: 0,
+        churnRate: 0,
+        avgFrequency: 0,
+        avgRecencyDays: 0,
+      }
+    }
+
+    if (!ltv_data || ltv_data.length === 0) {
+      return {
+        avgLtv: 0,
+        retentionRate: 0,
+        churnRate: 0,
+        avgFrequency: 0,
+        avgRecencyDays: 0,
+      }
+    }
+
+    const total_customers = ltv_data.length
+    const recurring_customers = ltv_data.filter((c: Record<string, unknown>) => Number(c.order_count) > 1).length
+    const one_time_customers = total_customers - recurring_customers
+
+    // Calcular LTV médio
+    const avgLtv = ltv_data.reduce((sum: number, c: Record<string, unknown>) => sum + Number(c.lifetime_revenue), 0) / total_customers
+
+    // Taxa de recompra = clientes com 2+ pedidos / total
+    const retentionRate = total_customers > 0 ? (recurring_customers / total_customers) * 100 : 0
+
+    // Churn = clientes com apenas 1 pedido / total
+    const churnRate = total_customers > 0 ? (one_time_customers / total_customers) * 100 : 0
+
+    // Frequência média de compra dos recorrentes
+    const avgFrequency = recurring_customers > 0
+      ? ltv_data
+          .filter((c: Record<string, unknown>) => Number(c.order_count) > 1)
+          .reduce((sum: number, c: Record<string, unknown>) => sum + Number(c.order_count), 0) / recurring_customers
+      : 0
+
+    // Recência média = dias desde última compra
+    const now = new Date()
+    const avgRecencyDays =
+      ltv_data.reduce((sum: number, c: Record<string, unknown>) => {
+        const lastOrderStr = c.last_order_at as string
+        if (!lastOrderStr) return sum
+        const lastOrder = new Date(lastOrderStr)
+        const days = Math.floor((now.getTime() - lastOrder.getTime()) / (1000 * 86400))
+        return sum + days
+      }, 0) / total_customers
+
+    console.log(`✅ Retention metrics fetched:`, {
+      total_customers,
+      recurring_customers,
+      avgLtv: avgLtv.toFixed(2),
+      retentionRate: retentionRate.toFixed(1),
+      churnRate: churnRate.toFixed(1),
+      avgFrequency: avgFrequency.toFixed(2),
+      avgRecencyDays: avgRecencyDays.toFixed(1),
+    })
+
+    return {
+      avgLtv: Math.round(avgLtv * 100) / 100,
+      retentionRate: Math.round(retentionRate * 100) / 100,
+      churnRate: Math.round(churnRate * 100) / 100,
+      avgFrequency: Math.round(avgFrequency * 100) / 100,
+      avgRecencyDays: Math.round(avgRecencyDays * 100) / 100,
+    }
+  } catch (err) {
+    console.error('❌ fetchRetentionMetrics error:', err)
+    return {
+      avgLtv: 0,
+      retentionRate: 0,
+      churnRate: 0,
+      avgFrequency: 0,
+      avgRecencyDays: 0,
+    }
+  }
+}

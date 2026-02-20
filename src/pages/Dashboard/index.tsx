@@ -16,12 +16,19 @@ import {
   BarChart2,
   Percent,
   RefreshCw,
+  Users,
+  Heart,
+  TrendingDown,
+  DollarSign,
+  Activity,
+  Zap,
 } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useTimezone } from '@/contexts/TimezoneContext'
 import { AlertBanner } from '@/components/AlertBanner'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { CampaignTable } from '@/components/CampaignTable'
+import { CockpitTable } from '@/components/CockpitTable'
 import { checkAlerts } from '@/services/alerts'
 import { fetchOrders, fetchMetaCampaigns } from '@/services/api'
 import { calculateDashboardMetrics } from '@/services/metrics'
@@ -431,6 +438,287 @@ export default function Dashboard() {
                 <CampaignTable campaigns={metrics.campaigns} />
               </div>
             </div>
+
+            {/* Seção 5: Tração e Vendas */}
+            {metrics.traction && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Tração e Vendas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    title="Ticket Médio"
+                    value={metrics.traction.aov}
+                    icon={<DollarSign className="w-5 h-5" />}
+                    placeholder="Sem vendas"
+                    subValue={`${metrics.orders.paid} pedidos`}
+                  />
+                  <MetricCard
+                    title="Taxa de Conversão"
+                    value={`${metrics.traction.conversionRate.toFixed(1)}%`}
+                    icon={<TrendingUp className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Nenhuma venda"
+                    subValue="checkout → paid"
+                  />
+                  <MetricCard
+                    title="% Pedidos com Kits"
+                    value={`${metrics.traction.kitOrdersPct.toFixed(1)}%`}
+                    icon={<Package className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Sem kits"
+                    subValue="Mix de produtos"
+                  />
+                  <MetricCard
+                    title="Tráfego Orgânico"
+                    value={`${metrics.traction.organicPct.toFixed(1)}%`}
+                    icon={<TrendingUp className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Nenhum direto"
+                    subValue="Sem utm_campaign"
+                  />
+                </div>
+
+                {/* SKU Mix */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <MetricCard
+                    title="Pote 680g"
+                    value={metrics.traction.skuMix.pote680g.revenue}
+                    icon={<Package className="w-5 h-5" />}
+                    placeholder="Sem vendas"
+                    subValue={`${metrics.traction.skuMix.pote680g.pct.toFixed(1)}% do total`}
+                  />
+                  <MetricCard
+                    title="Barra 400g"
+                    value={metrics.traction.skuMix.barra400g.revenue}
+                    icon={<Package className="w-5 h-5" />}
+                    placeholder="Sem vendas"
+                    subValue={`${metrics.traction.skuMix.barra400g.pct.toFixed(1)}% do total`}
+                  />
+                  <MetricCard
+                    title="Kits"
+                    value={metrics.traction.skuMix.kits.revenue}
+                    icon={<Package className="w-5 h-5" />}
+                    placeholder="Sem vendas"
+                    subValue={`${metrics.traction.skuMix.kits.pct.toFixed(1)}% do total`}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Seção 6: Lucratividade */}
+            {metrics.profitability && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Lucratividade
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    title="MCU"
+                    value={metrics.profitability.mcu}
+                    icon={<Wallet className="w-5 h-5" />}
+                    placeholder="Sem lucro"
+                    subValue="Margem Contrib. Unitária"
+                  />
+                  <MetricCard
+                    title="Margem Líquida %"
+                    value={`${metrics.profitability.netMarginPct.toFixed(1)}%`}
+                    icon={<Percent className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Sem lucro"
+                    subValue="% da receita paga"
+                  />
+                  <MetricCard
+                    title="ROI Produto"
+                    value={`${metrics.profitability.productRoi.toFixed(1)}%`}
+                    icon={<BarChart2 className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Sem dados"
+                    subValue="Retorno sobre COGS"
+                  />
+                  <MetricCard
+                    title="Breakeven"
+                    value={metrics.profitability.breakeven}
+                    icon={<TrendingUp className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="–"
+                    subValue="pedidos"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Seção 7: Marketing & Ads Expandida */}
+            {metrics.marketing && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Marketing & Publicidade (Expandido)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    title="CAC"
+                    value={metrics.marketing.cac}
+                    icon={<DollarSign className="w-5 h-5" />}
+                    placeholder="Sem gasto"
+                    subValue="Custo por Aquisição"
+                  />
+                  <MetricCard
+                    title="CPA"
+                    value={metrics.marketing.cpa}
+                    icon={<DollarSign className="w-5 h-5" />}
+                    placeholder="Sem dados"
+                    subValue="Custo por Click"
+                  />
+                  <MetricCard
+                    title="CPC Médio"
+                    value={metrics.marketing.avgCpcBrl}
+                    icon={<Megaphone className="w-5 h-5" />}
+                    placeholder="Sem dados"
+                    subValue="em BRL"
+                  />
+                  <MetricCard
+                    title="CPM Médio"
+                    value={metrics.marketing.avgCpmBrl}
+                    icon={<Megaphone className="w-5 h-5" />}
+                    placeholder="Sem dados"
+                    subValue="em BRL"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <MetricCard
+                    title="Total de Clicks"
+                    value={metrics.marketing.totalClicks}
+                    icon={<Activity className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Sem dados"
+                    subValue="Meta Ads"
+                  />
+                  <MetricCard
+                    title="Total de Impressões"
+                    value={metrics.marketing.totalImpressions}
+                    icon={<Activity className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Sem dados"
+                    subValue="Meta Ads"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Seção 8: Retenção de Clientes */}
+            {metrics.retention && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Retenção de Clientes
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    title="LTV Médio"
+                    value={metrics.retention.avgLtv}
+                    icon={<Heart className="w-5 h-5" />}
+                    placeholder="Sem dados"
+                    subValue="Lifetime Value"
+                  />
+                  <MetricCard
+                    title="Taxa de Recompra"
+                    value={`${metrics.retention.retentionRate.toFixed(1)}%`}
+                    icon={<Users className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="Sem dados"
+                    subValue="2+ pedidos"
+                  />
+                  <MetricCard
+                    title="Churn %"
+                    value={`${metrics.retention.churnRate.toFixed(1)}%`}
+                    icon={<TrendingDown className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="–"
+                    subValue="1 pedido apenas"
+                    valueColor="red"
+                  />
+                  <MetricCard
+                    title="Frequência Compra"
+                    value={metrics.retention.avgFrequency.toFixed(2)}
+                    icon={<TrendingUp className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="–"
+                    subValue="recorrentes"
+                  />
+                </div>
+
+                <MetricCard
+                  title="Recência Média"
+                  value={`${metrics.retention.avgRecencyDays.toFixed(0)} dias`}
+                  icon={<Clock className="w-5 h-5" />}
+                  isCurrency={false}
+                  placeholder="–"
+                  subValue="desde última compra"
+                />
+              </div>
+            )}
+
+            {/* Seção 9: Logístico-Financeiro */}
+            {metrics.logistics && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Logístico-Financeiro
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <MetricCard
+                    title="Impacto Frete Grátis"
+                    value={metrics.logistics.freeShippingImpact}
+                    icon={<Truck className="w-5 h-5" />}
+                    placeholder="Sem frete"
+                    subValue="R$ absorvido loja"
+                    variant="muted"
+                  />
+                  <MetricCard
+                    title="% Frete Grátis"
+                    value={`${metrics.logistics.freeShippingPct.toFixed(1)}%`}
+                    icon={<Truck className="w-5 h-5" />}
+                    isCurrency={false}
+                    placeholder="–"
+                    subValue="pedidos"
+                  />
+                  <MetricCard
+                    title="Taxa Gateway"
+                    value={metrics.logistics.gatewayFees}
+                    icon={<DollarSign className="w-5 h-5" />}
+                    placeholder="Sem vendas"
+                    subValue="3.3% da receita"
+                    variant="muted"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Seção 10: Cockpit Estratégico */}
+            {metrics.cockpit && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Cockpit Estratégico
+                </h3>
+                <div
+                  className={`rounded-xl border p-6 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                >
+                  <CockpitTable items={metrics.cockpit.items} />
+                </div>
+
+                <MetricCard
+                  title="LTV/CAC Ratio"
+                  value={`${metrics.cockpit.ltvCacRatio.toFixed(2)}x`}
+                  icon={<Zap className="w-5 h-5" />}
+                  isCurrency={false}
+                  placeholder="–"
+                  subValue="Meta: 3.0x"
+                  badge={{
+                    label: metrics.cockpit.ltvCacRatio >= 3.0 ? 'Saudável' : 'Monitorar',
+                    color: metrics.cockpit.ltvCacRatio >= 3.0 ? 'green' : metrics.cockpit.ltvCacRatio >= 1.5 ? 'amber' : 'red',
+                  }}
+                />
+              </div>
+            )}
 
             {/* Footer */}
             <div
