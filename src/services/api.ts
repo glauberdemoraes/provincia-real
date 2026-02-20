@@ -4,40 +4,45 @@ import type { NuvemshopOrder, MetaCampaign, DateRange } from '@/types'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 /**
- * Fetch orders from NuvemShop via Edge Function
+ * Fetch orders from NuvemShop via Supabase RPC sync_orders_to_cache
+ * This function synchronizes orders from NuvemShop to the cache table
+ * and includes utm_campaign extracted from landing_url
  */
 export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
   try {
     const startStr = range.start.toISOString().split('T')[0]
     const endStr = range.end.toISOString().split('T')[0]
 
-    console.log(`📦 Fetching NuvemShop orders from ${startStr} to ${endStr}...`)
+    console.log(`📦 Sincronizando NuvemShop orders from ${startStr} to ${endStr}...`)
 
-    const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/fetch-nuvemshop-orders`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          start_date: startStr,
-          end_date: endStr,
-        }),
-      }
-    )
+    // 1. Sincronizar dados do Supabase via RPC
+    const { data: syncResult, error: syncError } = await supabase.rpc('sync_orders_to_cache', {
+      p_start_date: startStr,
+      p_end_date: endStr,
+    })
 
-    if (!response.ok) {
-      const error = await response.json()
-      console.error('❌ Error fetching orders:', error)
+    if (syncError) {
+      console.warn('⚠️ Sync warning:', syncError)
+      // Continuar mesmo se sync falhar (fallback para cache)
+    } else {
+      console.log(`✅ Sync result:`, syncResult)
+    }
+
+    // 2. Buscar dados do banco (já com utm_campaign preenchido!)
+    const { data: orders, error } = await supabase
+      .from('orders_cache')
+      .select('*')
+      .gte('order_created_at', range.start.toISOString())
+      .lte('order_created_at', range.end.toISOString())
+      .order('order_created_at', { ascending: false })
+
+    if (error) {
+      console.error('❌ Error fetching orders from cache:', error)
       return []
     }
 
-    const data = await response.json()
-    console.log(`✅ Fetched ${data.result?.length || 0} orders from NuvemShop`)
-
-    return data.result || []
+    console.log(`✅ Fetched ${orders?.length || 0} orders from cache (with utm_campaign)`)
+    return orders || []
   } catch (err) {
     console.error('❌ fetchOrders error:', err)
     return []
