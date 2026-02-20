@@ -4,22 +4,8 @@ import type { NuvemshopOrder, MetaCampaign, DateRange } from '@/types'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 /**
- * Extract UTM parameter from URL
- * landing_url example: "https://provinciadores.com.br?utm_source=...&utm_campaign=..."
- */
-function extractUtmParam(url: string | null, paramName: string): string | null {
-  if (!url) return null
-  try {
-    const urlObj = new URL(url)
-    return urlObj.searchParams.get(paramName)
-  } catch {
-    return null
-  }
-}
-
-/**
- * Sync and save orders: Edge Function → Database
- * Calls the real edge function, then saves results to orders_cache
+ * Sync and save orders: Edge Function → RPC save_orders_json → Database
+ * Calls the real edge function, then saves results via RPC
  */
 async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
   try {
@@ -55,48 +41,36 @@ async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
       return []
     }
 
-    // 2. Insert/upsert each order into orders_cache with UTM extracted
-    const savedOrders: NuvemshopOrder[] = []
+    // 2. Save all orders via RPC save_orders_json (handles UTM extraction + upsert)
+    console.log(`💾 Saving to orders_cache via RPC...`)
 
-    for (const order of edgeOrders) {
-      const utm_campaign = extractUtmParam(order.landing_url, 'utm_campaign')
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('save_orders_json', {
+      p_orders: edgeOrders,
+    })
 
-      const { data: inserted, error: insertError } = await supabase
-        .from('orders_cache')
-        .upsert(
-          {
-            id: order.id,
-            total: order.total,
-            subtotal: order.subtotal,
-            shipping_cost_owner: order.shipping_cost_owner,
-            payment_status: order.payment_status,
-            shipping_status: order.shipping_status,
-            billing_name: order.billing_name,
-            contact_phone: order.contact_phone,
-            billing_phone: order.billing_phone,
-            landing_url: order.landing_url,
-            utm_source: extractUtmParam(order.landing_url, 'utm_source'),
-            utm_medium: extractUtmParam(order.landing_url, 'utm_medium'),
-            utm_campaign,
-            utm_content: extractUtmParam(order.landing_url, 'utm_content'),
-            utm_term: extractUtmParam(order.landing_url, 'utm_term'),
-            products: order.products,
-            order_created_at: order.created_at,
-            fetched_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        )
-        .select()
-
-      if (insertError) {
-        console.error(`❌ Error saving order ${order.id}:`, insertError)
-      } else if (inserted && inserted.length > 0) {
-        savedOrders.push(inserted[0])
-      }
+    if (rpcError) {
+      console.error(`❌ RPC error:`, rpcError)
+      return []
     }
 
-    console.log(`✅ Saved ${savedOrders.length} orders to orders_cache`)
-    return savedOrders
+    console.log(`✅ RPC result:`, rpcResult)
+
+    // 3. Fetch the saved orders from cache to return
+    const { data: savedOrders, error: fetchError } = await supabase
+      .from('orders_cache')
+      .select('*')
+      .in(
+        'id',
+        edgeOrders.map((o: any) => o.id)
+      )
+
+    if (fetchError) {
+      console.error(`❌ Error fetching saved orders:`, fetchError)
+      return edgeOrders // Fallback to edge data if fetch fails
+    }
+
+    console.log(`✅ Saved ${savedOrders?.length || 0} orders to orders_cache`)
+    return savedOrders || []
   } catch (err) {
     console.error('❌ syncAndSaveOrders error:', err)
     return []
