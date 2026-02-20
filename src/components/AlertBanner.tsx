@@ -8,7 +8,8 @@ interface AlertBannerProps {
 
 // Interpolar {value} na mensagem do alerta
 const interpolateAlert = (msg: string, alert: ActiveAlert): string => {
-  return msg.replaceAll('{value}', alert.current_value.toFixed(1))
+  const val = alert.current_value != null ? Number(alert.current_value).toFixed(1) : '–'
+  return msg.replaceAll('{value}', val)
 }
 
 export const AlertBanner: FC<AlertBannerProps> = ({ alerts }) => {

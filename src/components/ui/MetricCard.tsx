@@ -15,6 +15,7 @@ interface MetricCardProps {
   variant?: 'default' | 'hero' | 'muted'
   badge?: { label: string; color: 'green' | 'amber' | 'red' | 'blue' }
   valueColor?: 'default' | 'green' | 'red' | 'amber' | 'blue'
+  placeholder?: string
 }
 
 const getValueColorClass = (color?: string): string => {
@@ -58,6 +59,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   variant = 'default',
   badge,
   valueColor = 'default',
+  placeholder,
 }) => {
   const getTrendDirection = () => {
     if (!trend) return null
@@ -105,8 +107,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </div>
 
       <div className="mb-2">
-        <h3 className={`text-3xl font-bold mb-1 ${valueTextClass}`}>
-          {typeof value === 'number' && isCurrency ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value) : value}
+        <h3 className={`text-3xl font-bold mb-1 ${
+          !value || value === 0 ? 'text-zinc-400 dark:text-zinc-600' : valueTextClass
+        }`}>
+          {!value || value === 0
+            ? placeholder || '–'
+            : typeof value === 'number' && isCurrency
+              ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+              : value}
         </h3>
         <div className="flex items-center gap-2">
           {subValue && <p className="text-xs text-zinc-500 dark:text-zinc-400">{subValue}</p>}

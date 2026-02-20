@@ -100,3 +100,46 @@ export const formatLA = (date: Date): string => {
   const laString = date.toLocaleString('pt-BR', { timeZone: 'America/Los_Angeles' })
   return laString
 }
+
+/**
+ * Offset de horas entre BR e LA
+ * BRT = UTC-3, LAT = UTC-8
+ * Diferença = 5 horas
+ */
+export const BR_LA_OFFSET_HOURS = 5
+
+/**
+ * Calcular pesos proporcionais para distribuir spend Meta entre dias BR
+ * Quando modo BR: o "dia BR" cruza dois dias LA
+ * - Dia LA D-1: últimas 5 horas (5/24 ≈ 20.8%)
+ * - Dia LA D: primeiras 19 horas (19/24 ≈ 79.2%)
+ */
+export const getProportionalWeights = (): { prevDay: number; curDay: number } => {
+  return {
+    prevDay: BR_LA_OFFSET_HOURS / 24, // 5/24 ≈ 0.208
+    curDay: (24 - BR_LA_OFFSET_HOURS) / 24, // 19/24 ≈ 0.792
+  }
+}
+
+/**
+ * Obter range de dois dias LA que correspondem a um dia BR
+ * Para um dia BR (ex: 2026-02-20), retorna os dois dias LA que precisam ser consultados
+ */
+export const getDateRange_LA_forBR = (brDate: Date): { prev: Date; cur: Date } => {
+  // brDate é um dia em timezone BR (ex: 2026-02-20)
+  // Convertemos para duas datas em UTC para consultar os dois dias LA
+
+  const year = brDate.getFullYear()
+  const month = brDate.getMonth()
+  const day = brDate.getDate()
+
+  // Dia LA anterior: aquele cujas últimas 5 horas caem no dia BR
+  // "dia BR 2026-02-20" começa às 03:00 UTC (= 19:00 LA 2026-02-19)
+  const prevLaDate = new Date(Date.UTC(year, month, day - 1))
+
+  // Dia LA atual: aquele cujas primeiras 19 horas caem no dia BR
+  // "dia BR 2026-02-20" termina às 02:59 UTC (= 18:59 LA 2026-02-20)
+  const curLaDate = new Date(Date.UTC(year, month, day))
+
+  return { prev: prevLaDate, cur: curLaDate }
+}

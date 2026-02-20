@@ -6,9 +6,14 @@ import { convertUsdToBrl } from './exchangeRate'
 /**
  * Limpar UTM removendo ID numérico após barra vertical
  * "Campanha|12345678" → "Campanha"
+ * Também decodifica URL-encoded values (ex: %7C para |)
  */
 const cleanUtmValue = (raw: string): string => {
-  return raw.split('|')[0].trim()
+  try {
+    return decodeURIComponent(raw).split('|')[0].trim()
+  } catch {
+    return raw.split('|')[0].trim()
+  }
 }
 
 /**

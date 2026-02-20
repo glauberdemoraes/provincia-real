@@ -12,7 +12,7 @@ export interface TimezoneContextType {
 const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined)
 
 export const TimezoneProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [timeZoneMode, setTimeZoneMode] = useState<TimezoneMode>('LA')
+  const [timeZoneMode, setTimeZoneMode] = useState<TimezoneMode>('BR')
 
   return (
     <TimezoneContext.Provider value={{ timeZoneMode, setTimeZoneMode }}>

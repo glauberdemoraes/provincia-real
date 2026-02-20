@@ -12,7 +12,6 @@ import {
   Wallet,
   Package,
   Truck,
-  Calculator,
   Megaphone,
   BarChart2,
   Percent,
@@ -305,109 +304,32 @@ export default function Dashboard() {
           </div>
         ) : metrics ? (
           <>
-            {/* Seção 1: Vendas */}
+            {/* Seção 1: Resumo Executivo */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                Vendas
+                Resumo Executivo
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard
-                  title="Pedidos Gerados"
-                  value={metrics.orders.total}
-                  icon={<ShoppingCart className="w-5 h-5" />}
-                  isCurrency={false}
-                  subValue={`${metrics.orders.paid} pagos`}
-                />
-                <MetricCard
-                  title="Pedidos Pagos"
-                  value={metrics.orders.paid}
-                  icon={<CheckCircle className="w-5 h-5" />}
-                  isCurrency={false}
-                  subValue={metrics.orders.total > 0 ? `${((metrics.orders.paid / metrics.orders.total) * 100).toFixed(0)}% conversão` : '-'}
-                />
                 <MetricCard
                   title="Receita Paga"
                   value={metrics.revenue.paid}
                   icon={<TrendingUp className="w-5 h-5" />}
-                  valueColor="blue"
+                  variant="hero"
+                  valueColor="green"
+                  placeholder="Nenhuma venda"
                   subValue={`Bruto R$${metrics.revenue.gross.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`}
                 />
-                <MetricCard
-                  title="Ticket Médio"
-                  value={metrics.orders.paid > 0 ? metrics.revenue.paid / metrics.orders.paid : 0}
-                  icon={<Receipt className="w-5 h-5" />}
-                  subValue={`${metrics.orders.paid} pedidos pagos`}
-                />
-              </div>
-            </div>
-
-            {/* Seção 2: Lucratividade (Hero Card + Linha de custos) */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                Lucratividade
-              </h3>
-
-              {/* Hero Card: Lucro Líquido com ROI e ROAS */}
-              <div className="grid lg:grid-cols-2 gap-4">
                 <MetricCard
                   title="Lucro Líquido"
                   value={metrics.profit.net}
                   icon={<Wallet className="w-5 h-5" />}
                   variant="hero"
                   valueColor={getProfitColor(metrics.profit.net)}
+                  placeholder="Sem lucro"
                   badge={{
                     label: `ROI ${getRoiBadge(metrics.roi).label}`,
                     color: getRoiBadge(metrics.roi).color,
                   }}
-                  subValue={`ROAS ${metrics.roas.toFixed(2)}x`}
-                />
-                <MetricCard
-                  title="Lucro Bruto"
-                  value={metrics.profit.gross}
-                  icon={<TrendingUp className="w-5 h-5" />}
-                  valueColor={getProfitColor(metrics.profit.gross)}
-                  subValue={`Margem ${metrics.orders.paid > 0 ? ((metrics.profit.gross / metrics.revenue.paid) * 100).toFixed(1) : 0}%`}
-                />
-              </div>
-
-              {/* Linha de custos em variante muted */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <MetricCard
-                  title="Custo de Produtos"
-                  value={metrics.costs.products}
-                  icon={<Package className="w-5 h-5" />}
-                  variant="muted"
-                  inverseTrend={true}
-                />
-                <MetricCard
-                  title="Custo de Frete"
-                  value={metrics.costs.shipping}
-                  icon={<Truck className="w-5 h-5" />}
-                  variant="muted"
-                  inverseTrend={true}
-                />
-                <MetricCard
-                  title="Total de Custos"
-                  value={metrics.costs.total}
-                  icon={<Calculator className="w-5 h-5" />}
-                  variant="muted"
-                  inverseTrend={true}
-                />
-              </div>
-            </div>
-
-            {/* Seção 3: Marketing */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                Marketing
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <MetricCard
-                  title="Gasto em Ads"
-                  value={metrics.costs.adSpend}
-                  icon={<Megaphone className="w-5 h-5" />}
-                  variant="muted"
-                  inverseTrend={true}
                 />
                 <MetricCard
                   title="ROAS Geral"
@@ -415,6 +337,7 @@ export default function Dashboard() {
                   icon={<BarChart2 className="w-5 h-5" />}
                   isCurrency={false}
                   valueColor={getRoasColor(metrics.roas)}
+                  placeholder="Sem dados"
                   badge={{ label: 'Return on Ad Spend', color: getRoasColor(metrics.roas) }}
                 />
                 <MetricCard
@@ -423,7 +346,76 @@ export default function Dashboard() {
                   icon={<Percent className="w-5 h-5" />}
                   isCurrency={false}
                   valueColor={getProfitColor(metrics.roi)}
+                  placeholder="–"
                   badge={getRoiBadge(metrics.roi)}
+                />
+              </div>
+            </div>
+
+            {/* Seção 2: Vendas */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                Vendas
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <MetricCard
+                  title="Pedidos Gerados"
+                  value={metrics.orders.total}
+                  icon={<ShoppingCart className="w-5 h-5" />}
+                  isCurrency={false}
+                  placeholder="Nenhum pedido"
+                  subValue={`${metrics.orders.paid} pagos`}
+                />
+                <MetricCard
+                  title="Pedidos Pagos"
+                  value={metrics.orders.paid}
+                  icon={<CheckCircle className="w-5 h-5" />}
+                  isCurrency={false}
+                  placeholder="Nenhum pago"
+                  subValue={metrics.orders.total > 0 ? `${((metrics.orders.paid / metrics.orders.total) * 100).toFixed(0)}% conversão` : '-'}
+                />
+                <MetricCard
+                  title="Ticket Médio"
+                  value={metrics.orders.paid > 0 ? metrics.revenue.paid / metrics.orders.paid : 0}
+                  icon={<Receipt className="w-5 h-5" />}
+                  placeholder="Sem vendas"
+                  subValue={`${metrics.orders.paid} pedidos pagos`}
+                />
+              </div>
+            </div>
+
+            {/* Seção 3: Custos & Ads */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                Custos & Publicidade
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <MetricCard
+                  title="Gasto em Ads"
+                  value={metrics.costs.adSpend}
+                  icon={<Megaphone className="w-5 h-5" />}
+                  variant="muted"
+                  placeholder="Sem gasto"
+                  inverseTrend={true}
+                  subValue="Meta Ads"
+                />
+                <MetricCard
+                  title="Custo de Produtos"
+                  value={metrics.costs.products}
+                  icon={<Package className="w-5 h-5" />}
+                  variant="muted"
+                  placeholder="Sem produtos"
+                  inverseTrend={true}
+                  subValue="COGS"
+                />
+                <MetricCard
+                  title="Custo de Frete"
+                  value={metrics.costs.shipping}
+                  icon={<Truck className="w-5 h-5" />}
+                  variant="muted"
+                  placeholder="Sem frete"
+                  inverseTrend={true}
+                  subValue="Shipping"
                 />
               </div>
             </div>
