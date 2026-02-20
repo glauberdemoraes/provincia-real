@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import React from 'react'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { MetricTrend } from '@/types'
+import { TooltipInfo } from './TooltipInfo'
 
 interface MetricCardProps {
   title: string
@@ -16,6 +17,9 @@ interface MetricCardProps {
   badge?: { label: string; color: 'green' | 'amber' | 'red' | 'blue' }
   valueColor?: 'default' | 'green' | 'red' | 'amber' | 'blue'
   placeholder?: string
+  // Tooltip props
+  tooltipContent?: string
+  tooltipPosition?: 'top' | 'right' | 'bottom' | 'left'
 }
 
 const getValueColorClass = (color?: string): string => {
@@ -60,6 +64,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   badge,
   valueColor = 'default',
   placeholder,
+  tooltipContent,
+  tooltipPosition = 'top',
 }) => {
   const getTrendDirection = () => {
     if (!trend) return null
@@ -99,10 +105,15 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     <div
       className={`rounded-xl border shadow-sm p-5 flex flex-col justify-between h-full group hover:border-zinc-300 dark:hover:border-zinc-700 transition-all ${borderClass} ${bgClass}`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-          {title}
-        </span>
+      <div className="flex items-center justify-between mb-3 gap-2">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            {title}
+          </span>
+          {tooltipContent && (
+            <TooltipInfo content={tooltipContent} position={tooltipPosition} />
+          )}
+        </div>
         {icon && <span className="text-zinc-400 dark:text-zinc-600">{icon}</span>}
       </div>
 

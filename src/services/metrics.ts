@@ -211,7 +211,9 @@ export const calculateDashboardMetrics = async (
   }
 
   const cac = paidOrders.length > 0 ? totalAdSpend / paidOrders.length : 0
-  const cpa = totalClicks > 0 ? totalAdSpend / totalClicks : 0
+  // CPA: Custo por Venda/Ação (não por clique)
+  // CAC e CPA podem ser iguais neste caso, pois estamos contando conversões como vendas
+  const cpa = paidOrders.length > 0 ? totalAdSpend / paidOrders.length : 0
   const avgCpcUsd = cpcValues.length > 0 ? cpcValues.reduce((a, b) => a + b, 0) / cpcValues.length : 0
   const avgCpmUsd = cpmValues.length > 0 ? cpmValues.reduce((a, b) => a + b, 0) / cpmValues.length : 0
 
@@ -415,18 +417,19 @@ const calculateCampaignMetrics = (
 
   // Adicionar spend Meta Ads
   metaCampaigns.forEach((campaign) => {
-    const key = getCampaignKey(campaign.campaign_name)
+    const cleanedUtm = cleanUtmValue(campaign.campaign_name)
+    const key = getCampaignKey(cleanedUtm)
     const spend = spendMap.get(key) || 0
     const hasMatch = campaignMap.has(key)
 
     if (spend > 0 && !hasMatch) {
-      console.log(`[Metrics] ⚠️  Meta campaign sem match nos orders: "${campaign.campaign_name}"`)
+      console.log(`[Metrics] ⚠️  Meta campaign sem match nos orders: "${cleanedUtm}"`)
     }
 
     if (!campaignMap.has(key)) {
       campaignMap.set(key, {
         campaign_id: campaign.campaign_id,
-        campaign_name: campaign.campaign_name,
+        campaign_name: cleanedUtm,
         orders: 0,
         sales: 0,
         spend,
@@ -440,7 +443,7 @@ const calculateCampaignMetrics = (
       const metrics = campaignMap.get(key)!
       metrics.spend = spend
       if (spend > 0) {
-        console.log(`[Metrics] ✅ Match encontrado: "${campaign.campaign_name}" = "${metrics.campaign_name}" (orders: ${metrics.orders}, spend: R$ ${spend})`)
+        console.log(`[Metrics] ✅ Match encontrado: "${cleanedUtm}" = "${metrics.campaign_name}" (orders: ${metrics.orders}, spend: R$ ${spend})`)
       }
     }
   })
