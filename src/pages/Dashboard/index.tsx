@@ -29,6 +29,7 @@ import { AlertBanner } from '@/components/AlertBanner'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { CampaignTable } from '@/components/CampaignTable'
 import { CockpitTable } from '@/components/CockpitTable'
+import { RefreshButton } from '@/components/RefreshButton'
 import { checkAlerts } from '@/services/alerts'
 import { fetchOrders, fetchMetaCampaigns } from '@/services/api'
 import { calculateDashboardMetrics } from '@/services/metrics'
@@ -196,6 +197,41 @@ export default function Dashboard() {
               <PeriodButton type="7d" label="7d" />
               <PeriodButton type="30d" label="30d" />
               <PeriodButton type="month" label="Mês" />
+            </div>
+
+            {/* Refresh Button */}
+            <div className="hidden sm:block">
+              <RefreshButton
+                timeZoneMode={timeZoneMode}
+                onRefreshComplete={() => {
+                  // Recarregar dados após refresh manual
+                  const dateRange = getDateRange(period)
+                  setLoading(true)
+                  const loadData = async () => {
+                    try {
+                      const orders = await fetchOrders(dateRange)
+                      const campaigns = await fetchMetaCampaigns(dateRange)
+                      const exchangeRate = await getUsdToBrl(new Date())
+                      const dashboardMetrics = await calculateDashboardMetrics(
+                        orders,
+                        campaigns,
+                        exchangeRate,
+                        dateRange,
+                        timeZoneMode
+                      )
+                      setMetrics(dashboardMetrics)
+                      setLastUpdate(new Date())
+                      const result = await checkAlerts()
+                      setAlerts(result?.alerts || [])
+                    } catch (error) {
+                      console.error('Erro ao recarregar dados:', error)
+                    } finally {
+                      setLoading(false)
+                    }
+                  }
+                  loadData()
+                }}
+              />
             </div>
 
             {/* Timezone Toggle */}
