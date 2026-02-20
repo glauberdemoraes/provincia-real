@@ -1,0 +1,143 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                 COCKPIT PROVINCIA REAL — MIGRAÇÃO DO BANCO DE DADOS             ║
+║                                                                                 ║
+║                           STATUS: ⏳ PRONTO PARA EXECUTAR                        ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+📋 ARQUIVO PRONTO PARA COPIAR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Localização: /root/aios-workspace/provincia-real/supabase/MIGRATIONS_COMBINED.sql
+  Tamanho:     401 linhas, 20 KB
+  Tempo:       ~30 segundos para executar
+
+🚀 INSTRUÇÕES RÁPIDAS (2 MINUTOS):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Abra no seu navegador:
+     https://supabase.com/dashboard/project/prnshbkblddfgttsgxpt/sql/new
+
+  2. Copie TODO o conteúdo de:
+     supabase/MIGRATIONS_COMBINED.sql
+
+  3. Cole no editor do Supabase e clique "RUN" (Ctrl+Enter)
+
+  4. Aguarde 30 segundos (deve dizer "Query executed successfully")
+
+  5. Pronto! ✨
+
+✅ VALIDAR APÓS EXECUÇÃO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Opção 1 (Manual): No SQL Editor, rode:
+  ┌─────────────────────────────────────────────────────────────┐
+  │ SELECT table_name FROM information_schema.tables             │
+  │ WHERE table_schema = 'public' ORDER BY table_name;          │
+  └─────────────────────────────────────────────────────────────┘
+
+  Deve retornar 5 tabelas:
+  • orders_cache ✅
+  • meta_campaigns_cache ✅
+  • alerts_config ✅
+  • active_alerts ✅
+  • sync_logs ✅
+
+  Opção 2 (Automático): No seu terminal:
+  ┌─────────────────────────────────────────────────────────────┐
+  │ cd provincia-real                                           │
+  │ npx ts-node validate-migrations.ts                          │
+  └─────────────────────────────────────────────────────────────┘
+
+📊 O QUE SERÁ CRIADO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓ 2 Tabelas de Cache (para não sobrecarregar APIs)
+    • orders_cache (pedidos do NuvemShop)
+    • meta_campaigns_cache (campanhas do Meta Ads)
+
+  ✓ 3 Tabelas de Suporte
+    • alerts_config (7 regras de alerta padrão)
+    • active_alerts (alertas disparados)
+    • sync_logs (histórico de sincronizações)
+
+  ✓ 4 Funções SQL
+    • check_alerts() - avalia todas as 7 regras
+    • sync_orders_to_cache() - puxa pedidos
+    • sync_meta_to_cache() - puxa campanhas
+    • extract_utm_param() - parseia URLs
+
+  ✓ 4 Views Analytics (para Dashboard)
+    • daily_sales_summary - vendas por dia
+    • utm_performance_summary - conversões por canal
+    • customer_ltv_summary - clientes recorrentes
+    • hourly_order_velocity - pedidos por hora
+
+  ✓ 7 Regras de Alertas (seed automático)
+    1. Ritmo abaixo do alvo (< 70%) ⚠️
+    2. Ritmo crítico (< 40%) 🚨
+    3. ROAS muito baixo (< 2.0x) ⚠️
+    4. ROAS crítico (< 1.0x) 🚨
+    5. CPA muito alto (> R$ 50) ⚠️
+    6. Nenhum pedido na hora (< 0.5/hr) ℹ️
+    7. Gasto Meta alto (> USD 200) ⚠️
+
+🔐 SEGURANÇA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓ Row Level Security (RLS) habilitado
+    • Apenas cliente anon pode ler dados de cache
+    • Apenas functions podem escrever (protegidas)
+    • Admin pode gerenciar
+
+  ⚠️ TOKENS AINDA HARDCODED (será migrado para Vault)
+    • NuvemShop token em fetch_nuvemshop_orders()
+    • Meta token em fetch_meta_campaigns()
+    • Usar Vault depois para segurança adicional
+
+📞 TROUBLESHOOTING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ❌ "Relation 'orders_cache' already exists"
+     → Tudo bem! Significa que as migrações já foram aplicadas
+
+  ❌ "syntax error at end of input"
+     → Você colou apenas parte do arquivo. Copie TODO o conteúdo
+
+  ❌ "Query executed successfully" MAS ainda recebo erros
+     → Recarregue a página do dashboard (Ctrl+Shift+R)
+
+🎯 PRÓXIMAS ETAPAS (após migrações):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Verificar Dashboard
+     https://provincia-real.vercel.app/dashboard
+     → Status bar deve mostrar "DB: Connected"
+
+  2. Testar Alertas
+     https://provincia-real.vercel.app/settings
+     → Deverá carregar as 7 regras padrão
+
+  3. Integrar Dados Originais
+     → Migrar código do App.tsx original
+     → Conectar componentes aos dados do cache
+
+  4. Completar Funcionalidades
+     → Página Realtime (TV mode com auto-refresh 30s)
+     → Página History (tendências e LTV)
+     → Sincronização de dados via UI
+
+────────────────────────────────────────────────────────────────────────────────
+
+DÚVIDAS? Verifique o arquivo completo em:
+  → RUN_MIGRATIONS.md (instruções detalhadas com screenshots)
+
+PRECISA VALIDAR? Execute:
+  → npx ts-node validate-migrations.ts (verificação automática)
+
+STATUS ATUAL:
+  ✅ React app pronto em https://provincia-real.vercel.app
+  ✅ Banco de dados estrutura pronta
+  ✅ Arquivo de migração pronto para copiar
+  ⏳ Aguardando: Execução manual no SQL Editor
+
+────────────────────────────────────────────────────────────────────────────────
