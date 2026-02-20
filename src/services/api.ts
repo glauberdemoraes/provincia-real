@@ -1,88 +1,86 @@
 import { supabase } from '@/lib/supabase'
 import type { NuvemshopOrder, MetaCampaign, DateRange } from '@/types'
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+
+/**
+ * Fetch orders from NuvemShop via Edge Function
+ */
 export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
   try {
-    // Fazer requisições dia a dia para evitar limite de tamanho de resposta
-    const allOrders: NuvemshopOrder[] = []
-    const current = new Date(range.start)
+    const startStr = range.start.toISOString().split('T')[0]
+    const endStr = range.end.toISOString().split('T')[0]
 
-    while (current <= range.end) {
-      const dayStart = new Date(current)
-      dayStart.setHours(0, 0, 0, 0)
+    console.log(`📦 Fetching NuvemShop orders from ${startStr} to ${endStr}...`)
 
-      const dayEnd = new Date(current)
-      dayEnd.setHours(23, 59, 59, 999)
-
-      const startStr = dayStart.toISOString().split('T')[0]
-      const endStr = dayEnd.toISOString().split('T')[0]
-
-      console.log(`Fetching orders for ${startStr}...`)
-
-      const { data, error } = await supabase.rpc('fetch_nuvemshop_orders', {
-        start_date: startStr,
-        end_date: endStr,
-      })
-
-      if (error) {
-        console.warn(`Failed to fetch orders for ${startStr}:`, error.message)
-      } else if (Array.isArray(data)) {
-        allOrders.push(...data)
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/fetch-nuvemshop-orders`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          start_date: startStr,
+          end_date: endStr,
+        }),
       }
+    )
 
-      // Incrementar um dia
-      current.setDate(current.getDate() + 1)
-
-      // Pequeno delay para não sobrecarregar a API
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('❌ Error fetching orders:', error)
+      return []
     }
 
-    return allOrders
+    const data = await response.json()
+    console.log(`✅ Fetched ${data.result?.length || 0} orders from NuvemShop`)
+
+    return data.result || []
   } catch (err) {
-    console.error('fetchOrders error:', err)
+    console.error('❌ fetchOrders error:', err)
     return []
   }
 }
 
+/**
+ * Fetch Meta Ads campaigns via Edge Function
+ */
 export async function fetchMetaCampaigns(range: DateRange): Promise<MetaCampaign[]> {
   try {
-    // Fazer requisições dia a dia se necessário
-    const allCampaigns: MetaCampaign[] = []
-    const current = new Date(range.start)
+    const startStr = range.start.toISOString().split('T')[0]
+    const endStr = range.end.toISOString().split('T')[0]
 
-    while (current <= range.end) {
-      const dayStart = new Date(current)
-      dayStart.setHours(0, 0, 0, 0)
+    console.log(`📊 Fetching Meta campaigns from ${startStr} to ${endStr}...`)
 
-      const dayEnd = new Date(current)
-      dayEnd.setHours(23, 59, 59, 999)
-
-      const startStr = dayStart.toISOString().split('T')[0]
-      const endStr = dayEnd.toISOString().split('T')[0]
-
-      console.log(`Fetching Meta campaigns for ${startStr}...`)
-
-      const { data, error } = await supabase.rpc('fetch_meta_campaigns', {
-        start_date: startStr,
-        end_date: endStr,
-      })
-
-      if (error) {
-        console.warn(`Failed to fetch campaigns for ${startStr}:`, error.message)
-      } else if (Array.isArray(data)) {
-        allCampaigns.push(...data)
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/fetch-meta-campaigns`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          start_date: startStr,
+          end_date: endStr,
+        }),
       }
+    )
 
-      // Incrementar um dia
-      current.setDate(current.getDate() + 1)
-
-      // Pequeno delay para não sobrecarregar a API
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('❌ Error fetching campaigns:', error)
+      return []
     }
 
-    return allCampaigns
+    const data = await response.json()
+    console.log(`✅ Fetched ${data.data?.length || 0} campaigns from Meta`)
+
+    return data.data || []
   } catch (err) {
-    console.error('fetchMetaCampaigns error:', err)
+    console.error('❌ fetchMetaCampaigns error:', err)
     return []
   }
 }
