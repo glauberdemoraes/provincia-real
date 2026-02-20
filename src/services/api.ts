@@ -61,7 +61,7 @@ async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
       .select('*')
       .in(
         'id',
-        edgeOrders.map((o: any) => o.id)
+        edgeOrders.map((o: Record<string, unknown>) => o.id)
       )
 
     if (fetchError) {

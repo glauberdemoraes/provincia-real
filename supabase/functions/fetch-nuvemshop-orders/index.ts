@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     }
 
     // Transformar orders para extrair utm_campaign corretamente
-    const transformedOrders = orders.map((order: any) => ({
+    const transformedOrders = orders.map((order: Record<string, unknown>) => ({
       id: order.id,
       total: order.total,
       subtotal: order.subtotal,
