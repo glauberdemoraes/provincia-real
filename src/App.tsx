@@ -1,13 +1,24 @@
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { TimezoneProvider } from '@/contexts/TimezoneContext'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import { initializeDatabase, logMigrationStatus } from '@/lib/migrations'
 import Dashboard from '@/pages/Dashboard'
 import Realtime from '@/pages/Realtime'
 import History from '@/pages/History'
 import Settings from '@/pages/Settings'
 
 function App() {
+  // Initialize database on app startup
+  useEffect(() => {
+    initializeDatabase().then(() => {
+      if (import.meta.env.DEV) {
+        logMigrationStatus()
+      }
+    })
+  }, [])
+
   return (
     <ErrorBoundary>
       <ThemeProvider>
