@@ -177,3 +177,44 @@ export interface TargetMetric {
   pacePct?: number
   paceValue?: number
 }
+
+// Ad Campaign Metrics (Campanha com análise ROAS/ROI)
+export interface AdCampaignMetrics {
+  campaign_id: string
+  campaign_name: string
+  orders: number
+  sales: number // receita BRL dos pedidos com esse UTM
+  spend: number // gasto em BRL (convertido de USD)
+  productCost: number // custo de produtos
+  shippingCost: number // custo de frete
+  profit: number // sales - productCost - shippingCost - spend
+  roas: number // sales / spend (Return on Ad Spend)
+  roi: number // profit / (spend + productCost + shippingCost) × 100
+}
+
+// Dashboard Data (Métricas consolidadas + campanhas)
+export interface DashboardData {
+  period: { start: Date; end: Date; label: string }
+  exchangeRate: number // USD→BRL do dia
+  orders: {
+    total: number // pedidos gerados
+    paid: number // pedidos pagos
+  }
+  revenue: {
+    gross: number // vendas brutas
+    paid: number // vendas pagas
+  }
+  costs: {
+    products: number // custo de produtos
+    shipping: number // frete
+    adSpend: number // gasto ads em BRL
+    total: number // total de custos
+  }
+  profit: {
+    gross: number // pago - produtos - frete
+    net: number // lucro bruto - ads
+  }
+  roas: number // geral: vendas pagas / total adSpend
+  roi: number // geral: lucro líquido / total custos × 100
+  campaigns: AdCampaignMetrics[]
+}
