@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
     const data = await response.json()
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ result: Array.isArray(data) ? data : data.result || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
