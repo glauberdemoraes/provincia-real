@@ -50,14 +50,23 @@ export const isToday_LA = (date: Date): boolean => {
 /** Retornar início e fim do dia atual em Los Angeles */
 export const getTodayRange_LA = (): { start: Date; end: Date } => {
   const now = new Date()
-  const laString = now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
-  const laToday = new Date(laString)
 
-  const start = new Date(laToday)
-  start.setHours(0, 0, 0, 0)
+  // Get date string in LA timezone (YYYY-MM-DD)
+  const laFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
 
-  const end = new Date(laToday)
-  end.setHours(23, 59, 59, 999)
+  const dateStr = laFormatter.format(now) // e.g., "2026-02-20"
+  const [year, month, day] = dateStr.split('-').map(Number)
+
+  // LA is UTC-8, so:
+  // 2026-02-20 00:00:00 LA = 2026-02-20 08:00:00 UTC
+  // 2026-02-20 23:59:59 LA = 2026-02-21 07:59:59 UTC
+  const start = new Date(Date.UTC(year, month - 1, day, 8, 0, 0, 0))
+  const end = new Date(Date.UTC(year, month - 1, day + 1, 7, 59, 59, 999))
 
   return { start, end }
 }

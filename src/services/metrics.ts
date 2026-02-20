@@ -33,10 +33,23 @@ export const calculateDashboardMetrics = async (
   }
 
   // Converter datas NuvemShop de São Paulo para LA time e filtrar pelo período
+  console.log(`[Metrics] Filtrando ${orders.length} orders para período:`, {
+    periodStart: period!.start.toISOString(),
+    periodEnd: period!.end.toISOString(),
+    sampleOrders: orders.slice(0, 3).map(o => ({
+      id: o.id,
+      created_at: o.created_at,
+      laDate: saoPauloToLA(o.created_at).toISOString()
+    }))
+  })
+
   const filteredOrders = orders.filter((order) => {
     const laDate = saoPauloToLA(order.created_at)
-    return laDate >= period!.start && laDate <= period!.end
+    const isInRange = laDate >= period!.start && laDate <= period!.end
+    return isInRange
   })
+
+  console.log(`[Metrics] Resultado: ${filteredOrders.length} orders dentro do período`)
 
   // Separar pedidos pagos
   const paidOrders = filteredOrders.filter((o) => o.payment_status === 'paid')
