@@ -154,14 +154,26 @@ const calculateCampaignMetrics = (
 ): AdCampaignMetrics[] => {
   const campaignMap = new Map<string, AdCampaignMetrics>()
 
+  // Debug: Analisar utm_campaign dos primeiros pedidos
+  if (paidOrders.length > 0) {
+    console.log('[Metrics] Amostra de utm_campaign recebidos:')
+    paidOrders.slice(0, 3).forEach((order, i) => {
+      console.log(`  [${i}] utm_campaign="${order.utm_campaign}" (tipo: ${typeof order.utm_campaign})`)
+      console.log(`      → cleanUtmValue: "${cleanUtmValue(order.utm_campaign || 'Direto')}"`)
+    })
+  }
+
   // Processar cada pedido pago
   paidOrders.forEach((order) => {
-    const utmCampaign = normalizeCampaignName(cleanUtmValue(order.utm_campaign || 'Direto'))
+    // Proteger contra utm_campaign vazio/whitespace
+    const rawUtm = (order.utm_campaign || '').trim()
+    const cleanedUtm = cleanUtmValue(rawUtm || 'Direto')
+    const utmCampaign = normalizeCampaignName(cleanedUtm)
 
     if (!campaignMap.has(utmCampaign)) {
       campaignMap.set(utmCampaign, {
         campaign_id: utmCampaign,
-        campaign_name: cleanUtmValue(order.utm_campaign || 'Direto'),
+        campaign_name: cleanedUtm,
         orders: 0,
         sales: 0,
         spend: 0,
@@ -180,10 +192,28 @@ const calculateCampaignMetrics = (
     metrics.shippingCost += Number(order.shipping_cost_owner || 0)
   })
 
+  // Debug: Matching entre utm_campaign e meta campaigns
+  console.log('[Metrics] Campanhas Meta Ads recebidas:')
+  metaCampaigns.slice(0, 3).forEach((campaign) => {
+    const normalized = normalizeCampaignName(campaign.campaign_name)
+    console.log(`  Meta: "${campaign.campaign_name}" → normalizado: "${normalized}"`)
+  })
+
+  // Debug: Campanhas do mapa antes de adicionar spend
+  console.log('[Metrics] Campanhas UTM encontradas nos orders:')
+  Array.from(campaignMap.keys()).slice(0, 5).forEach((key) => {
+    console.log(`  UTM: "${key}"`)
+  })
+
   // Adicionar spend Meta Ads
   metaCampaigns.forEach((campaign) => {
     const normalized = normalizeCampaignName(campaign.campaign_name)
     const spend = spendMap.get(normalized) || 0
+    const hasMatch = campaignMap.has(normalized)
+
+    if (spend > 0 && !hasMatch) {
+      console.log(`[Metrics] ⚠️  Meta campaign sem match nos orders: "${campaign.campaign_name}"`)
+    }
 
     if (!campaignMap.has(normalized)) {
       campaignMap.set(normalized, {
@@ -201,6 +231,9 @@ const calculateCampaignMetrics = (
     } else {
       const metrics = campaignMap.get(normalized)!
       metrics.spend = spend
+      if (spend > 0) {
+        console.log(`[Metrics] ✅ Match encontrado: "${campaign.campaign_name}" = "${metrics.campaign_name}" (orders: ${metrics.orders}, spend: R$ ${spend})`)
+      }
     }
   })
 
