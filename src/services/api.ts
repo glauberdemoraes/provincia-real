@@ -3,13 +3,41 @@ import type { NuvemshopOrder, MetaCampaign, DateRange } from '@/types'
 
 export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
   try {
-    const { data, error } = await supabase.rpc('fetch_nuvemshop_orders', {
-      start_date: range.start.toISOString().split('T')[0],
-      end_date: range.end.toISOString().split('T')[0],
-    })
+    // Fazer requisições dia a dia para evitar limite de tamanho de resposta
+    const allOrders: NuvemshopOrder[] = []
+    const current = new Date(range.start)
 
-    if (error) throw new Error(`Failed to fetch orders: ${error.message}`)
-    return Array.isArray(data) ? data : []
+    while (current <= range.end) {
+      const dayStart = new Date(current)
+      dayStart.setHours(0, 0, 0, 0)
+
+      const dayEnd = new Date(current)
+      dayEnd.setHours(23, 59, 59, 999)
+
+      const startStr = dayStart.toISOString().split('T')[0]
+      const endStr = dayEnd.toISOString().split('T')[0]
+
+      console.log(`Fetching orders for ${startStr}...`)
+
+      const { data, error } = await supabase.rpc('fetch_nuvemshop_orders', {
+        start_date: startStr,
+        end_date: endStr,
+      })
+
+      if (error) {
+        console.warn(`Failed to fetch orders for ${startStr}:`, error.message)
+      } else if (Array.isArray(data)) {
+        allOrders.push(...data)
+      }
+
+      // Incrementar um dia
+      current.setDate(current.getDate() + 1)
+
+      // Pequeno delay para não sobrecarregar a API
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+
+    return allOrders
   } catch (err) {
     console.error('fetchOrders error:', err)
     return []
@@ -18,13 +46,41 @@ export async function fetchOrders(range: DateRange): Promise<NuvemshopOrder[]> {
 
 export async function fetchMetaCampaigns(range: DateRange): Promise<MetaCampaign[]> {
   try {
-    const { data, error } = await supabase.rpc('fetch_meta_campaigns', {
-      start_date: range.start.toISOString().split('T')[0],
-      end_date: range.end.toISOString().split('T')[0],
-    })
+    // Fazer requisições dia a dia se necessário
+    const allCampaigns: MetaCampaign[] = []
+    const current = new Date(range.start)
 
-    if (error) throw new Error(`Failed to fetch Meta campaigns: ${error.message}`)
-    return Array.isArray(data) ? data : []
+    while (current <= range.end) {
+      const dayStart = new Date(current)
+      dayStart.setHours(0, 0, 0, 0)
+
+      const dayEnd = new Date(current)
+      dayEnd.setHours(23, 59, 59, 999)
+
+      const startStr = dayStart.toISOString().split('T')[0]
+      const endStr = dayEnd.toISOString().split('T')[0]
+
+      console.log(`Fetching Meta campaigns for ${startStr}...`)
+
+      const { data, error } = await supabase.rpc('fetch_meta_campaigns', {
+        start_date: startStr,
+        end_date: endStr,
+      })
+
+      if (error) {
+        console.warn(`Failed to fetch campaigns for ${startStr}:`, error.message)
+      } else if (Array.isArray(data)) {
+        allCampaigns.push(...data)
+      }
+
+      // Incrementar um dia
+      current.setDate(current.getDate() + 1)
+
+      // Pequeno delay para não sobrecarregar a API
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+
+    return allCampaigns
   } catch (err) {
     console.error('fetchMetaCampaigns error:', err)
     return []
