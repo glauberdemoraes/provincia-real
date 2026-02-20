@@ -1,11 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -14,7 +12,10 @@ serve(async (req) => {
     const { start_date, end_date } = await req.json()
 
     if (!start_date || !end_date) {
-      throw new Error("start_date and end_date required")
+      return new Response(JSON.stringify({ error: "start_date and end_date required" }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      })
     }
 
     const STORE_ID = '7230282'
@@ -34,12 +35,11 @@ serve(async (req) => {
       headers: {
         'Authentication': `bearer ${ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'Supabase-EdgeFunction/1.0'
       }
     })
 
     const data = await response.json()
-    
+
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
