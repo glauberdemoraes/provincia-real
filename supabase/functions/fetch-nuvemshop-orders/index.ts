@@ -39,8 +39,38 @@ Deno.serve(async (req) => {
     })
 
     const data = await response.json()
+    const orders = Array.isArray(data) ? data : data.result || []
 
-    return new Response(JSON.stringify({ result: Array.isArray(data) ? data : data.result || [] }), {
+    // Log para debug: mostrar estrutura de um order
+    if (orders.length > 0) {
+      console.log('[NuvemShop] Sample order keys:', Object.keys(orders[0]))
+      console.log('[NuvemShop] Sample order:', JSON.stringify(orders[0], null, 2))
+    }
+
+    // Transformar orders para extrair utm_campaign corretamente
+    const transformedOrders = orders.map((order: any) => ({
+      id: order.id,
+      total: order.total,
+      subtotal: order.subtotal,
+      shipping_cost_owner: order.shipping_cost_owner,
+      payment_status: order.payment_status,
+      shipping_status: order.shipping_status,
+      created_at: order.created_at,
+      landing_url: order.landing_url,
+      billing_name: order.billing_name,
+      contact_phone: order.contact_phone,
+      billing_phone: order.billing_phone,
+      products: order.products || order.product_lines || [],
+      utm_source: order.utm_source,
+      utm_medium: order.utm_medium,
+      utm_campaign: order.utm_campaign || order.utm_campaign_name,  // Tenta ambos os nomes
+      utm_content: order.utm_content,
+      utm_term: order.utm_term,
+    }))
+
+    console.log(`[NuvemShop] Transformed ${transformedOrders.length} orders`)
+
+    return new Response(JSON.stringify({ result: transformedOrders }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
