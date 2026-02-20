@@ -6,6 +6,11 @@ interface AlertBannerProps {
   alerts: ActiveAlert[]
 }
 
+// Interpolar {value} na mensagem do alerta
+const interpolateAlert = (msg: string, alert: ActiveAlert): string => {
+  return msg.replaceAll('{value}', alert.current_value.toFixed(1))
+}
+
 export const AlertBanner: FC<AlertBannerProps> = ({ alerts }) => {
   if (!alerts || alerts.length === 0) return null
 
@@ -38,7 +43,7 @@ export const AlertBanner: FC<AlertBannerProps> = ({ alerts }) => {
     <div className={`border rounded-lg px-4 py-3 flex items-center gap-3 ${bgColor}`}>
       <IconComponent className={`w-5 h-5 flex-shrink-0 ${textColor}`} />
       <div className="flex-1">
-        <p className={`text-sm font-bold ${textColor}`}>{displayAlert.message}</p>
+        <p className={`text-sm font-bold ${textColor}`}>{interpolateAlert(displayAlert.message, displayAlert)}</p>
         {alerts.length > 1 && (
           <p className={`text-xs ${textColor} opacity-75 mt-1`}>
             +{alerts.length - 1} alerta{alerts.length > 2 ? 's' : ''} ativo{alerts.length > 2 ? 's' : ''}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Sun,
@@ -26,7 +26,7 @@ import { CampaignTable } from '@/components/CampaignTable'
 import { checkAlerts } from '@/services/alerts'
 import { fetchOrders, fetchMetaCampaigns } from '@/services/api'
 import { calculateDashboardMetrics } from '@/services/metrics'
-import { getTodayRange_LA } from '@/lib/timezone'
+import { getTodayRange_LA, getTodayRange_BR } from '@/lib/timezone'
 import { getUsdToBrl } from '@/services/exchangeRate'
 import type { ActiveAlert, DashboardData } from '@/types'
 
@@ -41,9 +41,9 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState<DashboardData | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
-  // Calcular range de datas baseado no período
-  const getDateRange = (periodType: PeriodType): { start: Date; end: Date; label: string } => {
-    const { start: today, end: todayEnd } = getTodayRange_LA()
+  // Calcular range de datas baseado no período e timezone
+  const getDateRange = useCallback((periodType: PeriodType): { start: Date; end: Date; label: string } => {
+    const { start: today, end: todayEnd } = timeZoneMode === 'BR' ? getTodayRange_BR() : getTodayRange_LA()
 
     switch (periodType) {
       case 'today': {
@@ -75,7 +75,7 @@ export default function Dashboard() {
       default:
         return { start: today, end: todayEnd, label: 'Hoje' }
     }
-  }
+  }, [timeZoneMode])
 
   // Carregar dados
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function Dashboard() {
         const exchangeRate = await getUsdToBrl(new Date())
 
         // Calcular métricas
-        const dashboardMetrics = await calculateDashboardMetrics(orders, campaigns, exchangeRate, dateRange)
+        const dashboardMetrics = await calculateDashboardMetrics(orders, campaigns, exchangeRate, dateRange, timeZoneMode)
 
         console.log(`Métricas calculadas:`, {
           totalOrders: dashboardMetrics.orders.total,
@@ -109,6 +109,7 @@ export default function Dashboard() {
           revenue: dashboardMetrics.revenue.paid,
           adSpend: dashboardMetrics.costs.adSpend,
           campaigns: dashboardMetrics.campaigns.length,
+          timezone: timeZoneMode,
         })
 
         setMetrics(dashboardMetrics)
@@ -125,7 +126,7 @@ export default function Dashboard() {
     }
 
     loadData()
-  }, [period])
+  }, [period, timeZoneMode, getDateRange])
 
   // Botão de período
   const PeriodButton = ({ type, label }: { type: PeriodType; label: string }) => {
@@ -279,7 +280,7 @@ export default function Dashboard() {
             <p
               className={`text-sm ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}
             >
-              {metrics?.period.label} • {timeZoneMode === 'LA' ? 'Los Angeles' : 'São Paulo'} • UTC-8
+              {metrics?.period.label} • {timeZoneMode === 'LA' ? 'Los Angeles • UTC-8' : 'São Paulo • UTC-3'}
             </p>
           </div>
           {lastUpdate && (

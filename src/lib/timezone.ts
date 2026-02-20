@@ -48,7 +48,7 @@ export const isToday_LA = (date: Date): boolean => {
 }
 
 /** Retornar início e fim do dia atual em Los Angeles */
-export const getTodayRange_LA = (): { start: Date; end: Date } => {
+export const getTodayRange_LA = (): { start: Date; end: Date; label: string } => {
   const now = new Date()
 
   // Get date string in LA timezone (YYYY-MM-DD)
@@ -68,7 +68,31 @@ export const getTodayRange_LA = (): { start: Date; end: Date } => {
   const start = new Date(Date.UTC(year, month - 1, day, 8, 0, 0, 0))
   const end = new Date(Date.UTC(year, month - 1, day + 1, 7, 59, 59, 999))
 
-  return { start, end }
+  return { start, end, label: 'Hoje (LA)' }
+}
+
+/** Retornar início e fim do dia atual em São Paulo */
+export const getTodayRange_BR = (): { start: Date; end: Date; label: string } => {
+  const now = new Date()
+
+  // Get date string in BR timezone (YYYY-MM-DD)
+  const brFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+
+  const dateStr = brFormatter.format(now) // e.g., "2026-02-20"
+  const [year, month, day] = dateStr.split('-').map(Number)
+
+  // BR (São Paulo) is UTC-3, so:
+  // 2026-02-20 00:00:00 BR = 2026-02-20 03:00:00 UTC
+  // 2026-02-20 23:59:59 BR = 2026-02-21 02:59:59 UTC
+  const start = new Date(Date.UTC(year, month - 1, day, 3, 0, 0, 0))
+  const end = new Date(Date.UTC(year, month - 1, day + 1, 2, 59, 59, 999))
+
+  return { start, end, label: 'Hoje (BR)' }
 }
 
 /** Formatar data para exibição (timezone LA) */

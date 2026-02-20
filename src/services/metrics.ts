@@ -1,7 +1,15 @@
 import type { NuvemshopOrder, MetaCampaign, DashboardData, AdCampaignMetrics } from '@/types'
-import { saoPauloToLA, getTodayRange_LA } from '@/lib/timezone'
+import { saoPauloToLA, getTodayRange_LA, getTodayRange_BR, toBrazil } from '@/lib/timezone'
 import { calculateOrderProductCost } from '@/lib/costCalculator'
 import { convertUsdToBrl } from './exchangeRate'
+
+/**
+ * Limpar UTM removendo ID numérico após barra vertical
+ * "Campanha|12345678" → "Campanha"
+ */
+const cleanUtmValue = (raw: string): string => {
+  return raw.split('|')[0].trim()
+}
 
 /**
  * Normalizar nome de campanha para comparação
@@ -18,34 +26,44 @@ const normalizeCampaignName = (name: string): string => {
 
 /**
  * Calcular métricas consolidadas para um período
- * Recebe orders, campanhas Meta Ads e taxa de câmbio
+ * Recebe orders, campanhas Meta Ads, taxa de câmbio e timezone
  */
 export const calculateDashboardMetrics = async (
   orders: NuvemshopOrder[],
   metaCampaigns: MetaCampaign[],
   exchangeRate: number,
-  period?: { start: Date; end: Date; label: string }
+  period?: { start: Date; end: Date; label: string },
+  timezone: 'LA' | 'BR' = 'LA'
 ): Promise<DashboardData> => {
-  // Usar período padrão (hoje em LA) se não fornecido
+  // Usar período padrão baseado no timezone se não fornecido
   if (!period) {
-    const { start, end } = getTodayRange_LA()
-    period = { start, end, label: 'Hoje (LA)' }
+    if (timezone === 'BR') {
+      const { start, end } = getTodayRange_BR()
+      period = { start, end, label: 'Hoje (BR)' }
+    } else {
+      const { start, end } = getTodayRange_LA()
+      period = { start, end, label: 'Hoje (LA)' }
+    }
   }
 
-  // Converter datas NuvemShop de São Paulo para LA time e filtrar pelo período
-  console.log(`[Metrics] Filtrando ${orders.length} orders para período:`, {
+  // Converter datas NuvemShop de São Paulo para o timezone correto e filtrar pelo período
+  const convertOrderDate = (isoString: string) => {
+    return timezone === 'BR' ? toBrazil(isoString) : saoPauloToLA(isoString)
+  }
+
+  console.log(`[Metrics] Filtrando ${orders.length} orders para período (${timezone}):`, {
     periodStart: period!.start.toISOString(),
     periodEnd: period!.end.toISOString(),
     sampleOrders: orders.slice(0, 3).map(o => ({
       id: o.id,
       created_at: o.created_at,
-      laDate: saoPauloToLA(o.created_at).toISOString()
+      tzDate: convertOrderDate(o.created_at).toISOString()
     }))
   })
 
   const filteredOrders = orders.filter((order) => {
-    const laDate = saoPauloToLA(order.created_at)
-    const isInRange = laDate >= period!.start && laDate <= period!.end
+    const orderDate = convertOrderDate(order.created_at)
+    const isInRange = orderDate >= period!.start && orderDate <= period!.end
     return isInRange
   })
 
@@ -133,12 +151,12 @@ const calculateCampaignMetrics = (
 
   // Processar cada pedido pago
   paidOrders.forEach((order) => {
-    const utmCampaign = normalizeCampaignName(order.utm_campaign || 'Direto')
+    const utmCampaign = normalizeCampaignName(cleanUtmValue(order.utm_campaign || 'Direto'))
 
     if (!campaignMap.has(utmCampaign)) {
       campaignMap.set(utmCampaign, {
         campaign_id: utmCampaign,
-        campaign_name: order.utm_campaign || 'Direto',
+        campaign_name: cleanUtmValue(order.utm_campaign || 'Direto'),
         orders: 0,
         sales: 0,
         spend: 0,
