@@ -1,12 +1,3 @@
--- =============================================================
--- Provincia Real: Customer Retention View
--- Enhanced LTV view with ALL customers for retention metrics
--- =============================================================
-
-BEGIN;
-
--- Customer LTV with ALL customers (no HAVING clause)
--- Used for retention calculations: churn rate, repeat rate, etc.
 CREATE OR REPLACE VIEW public.customer_ltv_all AS
 SELECT
     COALESCE(billing_name, 'Unknown') AS customer_name,
@@ -25,5 +16,3 @@ FROM public.orders_cache
 WHERE billing_name IS NOT NULL OR contact_phone IS NOT NULL
 GROUP BY billing_name, contact_phone
 ORDER BY lifetime_revenue DESC NULLS LAST;
-
-COMMIT;

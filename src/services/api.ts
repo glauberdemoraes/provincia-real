@@ -227,6 +227,32 @@ export async function generateMockOrders(start: Date, end: Date): Promise<Nuvems
 /**
  * Fetch retention metrics from customer_ltv_summary view
  */
+/**
+ * Initialize retention view (creates customer_ltv_all if needed)
+ */
+export async function initializeRetentionView(): Promise<boolean> {
+  try {
+    console.log('[API] Initializing retention view...')
+    const { data, error } = await supabase.rpc('initialize_retention_view')
+
+    if (error) {
+      console.warn('[API] Could not initialize view via RPC:', error.message)
+      // This is not a critical error - view may already exist
+      return false
+    }
+
+    if (data && data.length > 0) {
+      console.log('[API] ✅ View initialized:', data[0].message)
+      return data[0].success
+    }
+
+    return false
+  } catch (err) {
+    console.warn('[API] Error initializing view:', err)
+    return false
+  }
+}
+
 export async function fetchRetentionMetrics(): Promise<{
   avgLtv: number
   retentionRate: number
@@ -235,6 +261,9 @@ export async function fetchRetentionMetrics(): Promise<{
   avgRecencyDays: number
 }> {
   try {
+    // Ensure view exists before querying
+    await initializeRetentionView()
+
     // Query view customer_ltv_all para TODOS os clientes (incluindo one-time)
     const { data: ltv_data, error: ltv_error } = await supabase
       .from('customer_ltv_all')
