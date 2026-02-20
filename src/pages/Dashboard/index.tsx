@@ -18,7 +18,7 @@ import { useTimezone } from '@/contexts/TimezoneContext'
 import { AlertBanner } from '@/components/AlertBanner'
 import { CampaignTable } from '@/components/CampaignTable'
 import { checkAlerts } from '@/services/alerts'
-import { fetchOrdersFromCache, fetchMetaFromCache, generateMockOrders } from '@/services/api'
+import { fetchOrders, fetchMetaCampaigns } from '@/services/api'
 import { calculateDashboardMetrics } from '@/services/metrics'
 import { getTodayRange_LA } from '@/lib/timezone'
 import { getUsdToBrl } from '@/services/exchangeRate'
@@ -78,14 +78,9 @@ export default function Dashboard() {
         setLoading(true)
         const dateRange = getDateRange(period)
 
-        // Buscar dados do cache
-        let orders = await fetchOrdersFromCache(dateRange)
-        const campaigns = await fetchMetaFromCache(dateRange)
-
-        // Se não houver dados no cache, gerar mock
-        if (orders.length === 0) {
-          orders = await generateMockOrders(dateRange.start, dateRange.end)
-        }
+        // Buscar dados reais das Edge Functions
+        const orders = await fetchOrders(dateRange)
+        const campaigns = await fetchMetaCampaigns(dateRange)
 
         // Buscar taxa de câmbio do dia
         const exchangeRate = await getUsdToBrl(new Date())
