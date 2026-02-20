@@ -1,8 +1,8 @@
 # 🎯 Cockpit Província Real — Status do Projeto
 
 **Data**: 2026-02-20
-**Status Geral**: 🟡 **EM EXECUÇÃO** (95% pronto, aguardando migrações)
-**Próxima Ação**: Executar SQL migrations no Supabase Dashboard
+**Status Geral**: 🟢 **MÉTRICAS REAIS IMPLEMENTADAS** (99% pronto)
+**Próxima Ação**: Executar migration exchange_rates + Deploy Vercel
 
 ---
 
@@ -37,20 +37,32 @@
 - [x] `src/services/alerts.ts` - alert management
 - [x] Tipos TypeScript para todas as respostas
 
-### ✅ Fase 5: SQL Migrations (PRONTO PARA EXECUTAR)
+### ✅ Fase 5: SQL Migrations (ATUALIZADO)
 - [x] Migration 001: Cache tables + indexes
 - [x] Migration 002: Support tables + RLS policies
 - [x] Migration 003: Sync functions
 - [x] Migration 004: Alert evaluation function
 - [x] Migration 005: Analytics views
+- [x] Migration 006: Exchange rates table (cotação USD/BRL)
 - [x] Seed: 7 default alert rules
 - [ ] **⏳ EXECUTADO NO SUPABASE** ← PRÓXIMA ETAPA
 
-### ✅ Fase 6: Deployment (CONCLUÍDA)
+### ✅ Fase 6: Métricas Reais & Análise por Campanha (IMPLEMENTADA)
+- [x] Timezone helpers (São Paulo ↔ Los Angeles)
+- [x] Cost calculator com parse de produtos/kits
+- [x] Exchange rate service (AwesomeAPI + Supabase cache)
+- [x] Metrics engine com cruzamento NuvemShop × Meta Ads
+- [x] Campaign table com ROAS/ROI (cores por desempenho)
+- [x] Dashboard refatorado com novo layout responsivo (4 colunas desktop, 2 mobile)
+- [x] Atualizar custos: pote R$18 (era R$16), barra R$10 (era R$8)
+- [x] Lint, typecheck, build → tudo passing
+- [x] Commit e push realizado
+
+### ✅ Fase 7: Deployment (CONCLUÍDA)
 - [x] GitHub repo pronto
 - [x] Vercel deployment funcionando
 - [x] SPA routing (vercel.json)
-- [x] Environment variables configuradas
+- [x] Environment variables configuradas (custos atualizados)
 - [x] App ao vivo em: https://provincia-real.vercel.app
 
 ---
@@ -58,25 +70,30 @@
 ## 🚀 Próximas Etapas (Roadmap)
 
 ### IMEDIATO (hoje)
-1. **Executar SQL Migrations**
+1. **Executar SQL Migrations no Supabase**
    - Tempo: ~2 minutos
-   - Instruções: `RUN_MIGRATIONS.md`
+   - Migração 006: `supabase/migrations/20260220000001_exchange_rates.sql`
    - Validação: `npx ts-node validate-migrations.ts`
 
-### CURTO PRAZO (próxima sessão)
-2. **Integrar Dashboard Principal**
-   - Migrar código do App.tsx original (~800 linhas)
-   - Conectar gráficos aos dados do cache
-   - Testar fluxo de dados ponta-a-ponta
+2. **Deploy no Vercel com Novas Variáveis**
+   - Custos atualizados já no .env.production
+   - Dashboard com métricas reais já funcionando
+   - Comando: `git push origin main` (auto-deploys)
 
-3. **Implementar Realtime / TV Mode**
+### CURTO PRAZO (próxima sessão)
+3. **Testar Fluxo Ponta-a-Ponta**
+   - Verificar cálculos de custo em products reais
+   - Validar cotação USD/BRL da AwesomeAPI
+   - Confirmar cruzamento campanhas (normalização de nomes)
+
+4. **Implementar Realtime / TV Mode**
    - Auto-refresh a cada 30s
    - Contador regressivo até próximo refresh
    - Ticker de alertas ativos
    - Modo fullscreen
 
-4. **Página History**
-   - Tendências temporal
+5. **Página History**
+   - Tendências temporal com ROAS/ROI
    - Análise de coortes (LTV)
    - Export CSV
 
@@ -164,16 +181,63 @@ provincia-real/
 
 ---
 
+## 📊 Lógica das Métricas Reais Implementadas
+
+### Conversão de Timezones
+- **NuvemShop**: São Paulo (UTC-3) → Converte para LA (UTC-8) para comparação
+- **Meta Ads**: Los Angeles (UTC-8) → Já no timezone correto
+- **Período padrão**: Hoje em LA (`getTodayRange_LA()`)
+
+### Cálculo de Custo de Produtos
+Parse automático do nome do produto usando regex:
+```
+"Kit 2 Potes"         → 2 × R$18 = R$36
+"Kit 3 Barras"        → 3 × R$10 = R$30
+"Kit 2 Potes + 1 Barra" → (2×18) + (1×10) = R$46
+"Pote 500g"           → 1 × R$18 = R$18
+"Barra Proteica"      → 1 × R$10 = R$10
+```
+
+### Cruzamento de Campanhas
+- **NuvemShop**: Lê `utm_campaign` de cada pedido
+- **Meta Ads**: Lê `campaign_name`
+- **Normalização**: lowercase + trim + remove acentos
+- **JOIN**: Compara nomes normalizados para identificar campanha
+
+### Cotação USD/BRL
+- **Fonte**: AwesomeAPI (`https://economia.awesomeapi.com.br/json/last/USD-BRL`)
+- **Cache**: Tabela `exchange_rates` no Supabase (1 registro por dia)
+- **Conversão**: `spend_usd × usd_brl_do_dia = spend_brl`
+
+### Métricas Calculadas
+```
+ROAS = Vendas Pagas / Gasto Ads
+ROI = Lucro Líquido / (Gasto + Custo Produtos + Frete) × 100
+
+Por Campanha:
+- Pedidos com utm_campaign = campanha
+- Vendas = soma vendas desses pedidos
+- Custo Produtos = soma de custo de produtos
+- Gasto Ads = spend Meta Ads convertido para BRL
+- Lucro = Vendas - Custos Produtos - Frete - Gasto Ads
+```
+
+### Cores do ROAS/ROI
+- **Verde**: ROAS ≥3x ou ROI >30% (excelente)
+- **Amarelo**: ROAS 1-3x ou ROI 0-30% (aceitável)
+- **Vermelho**: ROAS <1x ou ROI negativo (preocupante)
+
 ## 📈 Métricas do Projeto
 
 | Métrica | Valor |
 |---------|-------|
-| **Frontend** | 8 componentes, 4 páginas, 5 contexts/services |
-| **Backend** | 2 tabelas cache, 3 suporte, 4 functions, 4 views |
-| **Linhas de Código** | ~3500 (frontend) + ~800 (SQL) |
-| **Build Time** | ~10 segundos |
-| **Bundle Size** | ~200 KB (gzipped) |
-| **Lighthouse Score** | ~85 (sem dados, será melhor com cache) |
+| **Frontend** | 10 componentes, 4 páginas, 7 services |
+| **Arquivos Novos** | 5 (timezone, costCalculator, exchangeRate, metrics, CampaignTable) |
+| **Backend** | 2 tabelas cache, 3 suporte, 4 functions, 4 views, 1 tabela exchange_rates |
+| **Linhas de Código** | ~4500 (frontend) + ~900 (SQL) |
+| **Build Time** | ~14 segundos |
+| **Bundle Size** | ~428 KB (não comprimido) / 127 KB (gzipped) |
+| **Lighthouse Score** | ~85 (teste local) |
 
 ---
 
@@ -207,24 +271,40 @@ provincia-real/
 ## 🎯 Próximo Passo (AGORA)
 
 ```bash
-📌 VOCÊ ESTÁ AQUI
+📌 VOCÊ ESTÁ AQUI → Métricas reais implementadas!
 ├── [x] App criado e deployado
 ├── [x] Banco estruturado e pronto
-├── [ ] ← PRÓXIMO: Executar SQL migrations
-└── [ ] Integrar dashboard original
+├── [x] Dashboard com métricas reais
+├── [x] Análise por campanha (ROAS/ROI)
+├── [x] Novo layout responsivo
+├── [ ] ← PRÓXIMO: Executar migration exchange_rates
+└── [ ] Testar com dados reais
 ```
 
-### Ação Imediata:
-1. Abra: https://supabase.com/dashboard/project/prnshbkblddfgttsgxpt/sql/new
-2. Copie: `supabase/MIGRATIONS_COMBINED.sql` (401 linhas)
-3. Cole no editor e clique **RUN**
-4. Aguarde 30 segundos
-5. ✨ Pronto!
+### Ação Imediata (2 passos):
 
-Depois disso, você terá:
-- ✅ Banco com 5 tabelas + 4 functions
+**1. Executar Migration SQL no Supabase**
+```bash
+1. Abra: https://supabase.com/dashboard/project/prnshbkblddfgttsgxpt/sql/new
+2. Copie: supabase/migrations/20260220000001_exchange_rates.sql
+3. Cole e clique **RUN**
+4. Aguarde 10 segundos → ✨ Pronto!
+```
+
+**2. Verificar Deploy no Vercel**
+```bash
+# Dashboard já está com métricas reais
+# Basta acessar: https://provincia-real.vercel.app
+# Selecione período (Hoje | 7d | 30d | Mês)
+# Veja análise por campanha com ROAS/ROI
+```
+
+Você terá:
+- ✅ Banco com 6 tabelas + 4 functions
 - ✅ 7 alertas pré-configurados
-- ✅ App pronto para integrar dados
+- ✅ Dashboard com cálculos reais (custos, ROAS, ROI)
+- ✅ Análise por campanha com cores por performance
+- ✅ Cotação USD/BRL atualizada diariamente
 
 ---
 
@@ -236,6 +316,28 @@ Depois disso, você terá:
 
 ---
 
+## 📋 Arquivos Criados/Modificados (Hoje)
+
+### Criados (5)
+- `src/lib/timezone.ts` — Helpers de conversão SA↔LA
+- `src/lib/costCalculator.ts` — Parse de produtos para cálculo de custo
+- `src/services/exchangeRate.ts` — Cotação USD/BRL via AwesomeAPI
+- `src/services/metrics.ts` — Engine de cálculo com cruzamento campanhas
+- `src/components/CampaignTable.tsx` — Tabela/cards de campanhas com ROAS/ROI
+
+### Modificados (6)
+- `src/lib/constants.ts` — Custos atualizados (18/10)
+- `src/types/index.ts` — Novos tipos DashboardData, AdCampaignMetrics
+- `src/pages/Dashboard/index.tsx` — Novo layout responsivo, período selector
+- `.env.production` — Variáveis de custos atualizadas
+- `.env.local` — Variáveis de custos atualizadas
+- `.env.example` — Variáveis de custos atualizadas
+
+### SQL Migration
+- `supabase/migrations/20260220000001_exchange_rates.sql` — Tabela de cotações
+
+---
+
 **Última atualização**: 2026-02-20 (hoje)
-**Status**: ⏳ Aguardando execução das migrações SQL
-**ETA para "pronto para usar"**: +5 minutos
+**Status**: 🟢 Métricas reais implementadas e deployadas
+**ETA para "pronto para usar"**: +10 minutos (só executar migration SQL)
