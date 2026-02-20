@@ -82,6 +82,15 @@ export default function Dashboard() {
         const orders = await fetchOrders(dateRange)
         const campaigns = await fetchMetaCampaigns(dateRange)
 
+        // Log para debug
+        console.log(`📦 Orders recebidos: ${orders.length}`, {
+          period: `${dateRange.start.toISOString().split('T')[0]} a ${dateRange.end.toISOString().split('T')[0]}`,
+          samples: orders.slice(0, 2).map(o => ({ id: o.id, created_at: o.created_at, total: o.total }))
+        })
+        console.log(`📊 Campaigns recebidas: ${campaigns.length}`, {
+          samples: campaigns.slice(0, 1).map(c => ({ id: c.campaign_id, name: c.campaign_name, spend: c.spend }))
+        })
+
         // Buscar taxa de câmbio do dia
         const exchangeRate = await getUsdToBrl(new Date())
 
@@ -93,6 +102,14 @@ export default function Dashboard() {
           dateRange
         )
 
+        console.log(`💹 Métricas calculadas:`, {
+          totalOrders: dashboardMetrics.orders.total,
+          paidOrders: dashboardMetrics.orders.paid,
+          revenue: dashboardMetrics.revenue.paid,
+          adSpend: dashboardMetrics.costs.adSpend,
+          campaigns: dashboardMetrics.campaigns.length
+        })
+
         setMetrics(dashboardMetrics)
         setLastUpdate(new Date())
 
@@ -100,7 +117,7 @@ export default function Dashboard() {
         const result = await checkAlerts()
         setAlerts(result?.alerts || [])
       } catch (error) {
-        console.error('Erro ao carregar dados:', error)
+        console.error('❌ Erro ao carregar dados:', error)
       } finally {
         setLoading(false)
       }
@@ -142,12 +159,15 @@ export default function Dashboard() {
     isCurrency?: boolean
     trend?: number
   }) => {
+    // Tratar valores null/undefined/NaN
+    const safeValue = isNaN(value) || !isFinite(value) ? 0 : value
+
     const formatted = isCurrency
       ? new Intl.NumberFormat('pt-BR', {
           style: 'currency',
           currency: 'BRL',
-        }).format(value)
-      : value.toLocaleString('pt-BR')
+        }).format(safeValue)
+      : safeValue.toLocaleString('pt-BR')
 
     const trendColor =
       trend !== undefined && trend > 0
