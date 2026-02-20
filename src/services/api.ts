@@ -49,7 +49,8 @@ async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
     })
 
     if (rpcError) {
-      console.error(`❌ RPC error:`, rpcError)
+      console.warn(`⚠️  RPC save_orders_json error (using cache instead):`, rpcError)
+      console.info('   This is expected if edge function schema needs update')
       return []
     }
 

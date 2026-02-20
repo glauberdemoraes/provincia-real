@@ -72,11 +72,14 @@ const calculateSkuMix = (
 }
 
 /**
- * Comparação EXATA de campanha (sem normalização)
- * Usa o nome exatamente como vem: maiúsculas, espaços, hífens, etc.
+ * Normalização de nome de campanha
+ * Converte + para espaço, remove espaços extras, normaliza para comparação
  */
 const getCampaignKey = (name: string): string => {
-  return name.trim() // Apenas remove espaços extras nas pontas
+  return name
+    .replace(/\+/g, ' ') // Converter + para espaço (URL decode)
+    .trim() // Remover espaços nas pontas
+    .replace(/\s+/g, ' ') // Normalizar múltiplos espaços para um
 }
 
 /**
@@ -211,8 +214,12 @@ export const calculateDashboardMetrics = async (
   const cpa = totalClicks > 0 ? totalAdSpend / totalClicks : 0
   const avgCpcUsd = cpcValues.length > 0 ? cpcValues.reduce((a, b) => a + b, 0) / cpcValues.length : 0
   const avgCpmUsd = cpmValues.length > 0 ? cpmValues.reduce((a, b) => a + b, 0) / cpmValues.length : 0
+
+  // Se CPM/CPC vêm como 0 ou undefined, tenta calcular a partir dos dados
+  const actualAvgCpm = avgCpmUsd > 0 ? avgCpmUsd : (totalImpressions > 0 && totalAdSpend > 0 ? (totalAdSpend / totalImpressions) * 1000 : 0)
+
   const avgCpcBrl = await convertUsdToBrl(avgCpcUsd, period.start)
-  const avgCpmBrl = await convertUsdToBrl(avgCpmUsd, period.start)
+  const avgCpmBrl = await convertUsdToBrl(actualAvgCpm, period.start)
 
   // 4. RETENÇÃO
   const retention = await fetchRetentionMetrics()

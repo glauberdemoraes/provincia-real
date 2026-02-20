@@ -573,15 +573,15 @@ export default function Dashboard() {
                     title="CPC Médio"
                     value={metrics.marketing.avgCpcBrl}
                     icon={<Megaphone className="w-5 h-5" />}
-                    placeholder="Sem dados"
-                    subValue="em BRL"
+                    placeholder="Sem dados de CPC"
+                    subValue="em BRL (Meta Ads)"
                   />
                   <MetricCard
                     title="CPM Médio"
                     value={metrics.marketing.avgCpmBrl}
                     icon={<Megaphone className="w-5 h-5" />}
-                    placeholder="Sem dados"
-                    subValue="em BRL"
+                    placeholder="Calculado dinamicamente"
+                    subValue="em BRL (R$/1000 impressões)"
                   />
                 </div>
 
@@ -591,16 +591,16 @@ export default function Dashboard() {
                     value={metrics.marketing.totalClicks}
                     icon={<Activity className="w-5 h-5" />}
                     isCurrency={false}
-                    placeholder="Sem dados"
-                    subValue="Meta Ads"
+                    placeholder="Nenhum click registrado"
+                    subValue="clicks da Meta Ads"
                   />
                   <MetricCard
                     title="Total de Impressões"
                     value={metrics.marketing.totalImpressions}
                     icon={<Activity className="w-5 h-5" />}
                     isCurrency={false}
-                    placeholder="Sem dados"
-                    subValue="Meta Ads"
+                    placeholder="Nenhuma impressão registrada"
+                    subValue="impressões da Meta Ads"
                   />
                 </div>
               </div>
