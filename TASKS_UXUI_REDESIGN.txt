@@ -1,0 +1,645 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                   PROVINCIA REAL - UI/UX REDESIGN PROJECT                      ║
+║                          Complete Task Breakdown                               ║
+║                     Start Date: 2026-02-24 | Est. End: 2026-03-20             ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════
+PHASE 1: DISCOVERY & ANALYSIS (Week 1)
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 TASK #6: UX/UI Analysis
+   Assigned to: @ux-design-expert
+   Duration: 4-6 hours
+   Status: 📋 Pending - Ready to Start
+
+   📌 Objectives:
+      ✓ Conduct comprehensive UX audit of current dashboard
+      ✓ Map user journeys and identify pain points
+      ✓ Benchmark against modern fintech dashboards
+      ✓ Create feature gap analysis
+      ✓ Review accessibility and performance
+
+   📤 Deliverables:
+      • UX Audit Report (current state assessment)
+      • User Journey Maps with pain points
+      • Feature opportunity backlog (prioritized)
+      • Design inspiration board (competitive analysis)
+      • Accessibility checklist + baseline
+      • Performance metrics baseline
+
+   ✅ Acceptance Criteria:
+      ✓ Top 5 improvement areas identified with specifics
+      ✓ Recommendations are concrete (not vague)
+      ✓ Competitive analysis completed
+      ✓ Ready for design phase
+
+═══════════════════════════════════════════════════════════════════════════════
+PHASE 2: DESIGN (Weeks 1-2)
+═══════════════════════════════════════════════════════════════════════════════
+
+🎨 TASK #7: UI Design System
+   Assigned to: @ux-design-expert
+   Duration: 8-12 hours
+   Status: 📋 Pending - Starts after Task #6
+
+   📌 Objectives:
+      ✓ Create futuristic yet intuitive design language
+      ✓ Build complete component system
+      ✓ Design dashboard layout (desktop + mobile)
+      ✓ Support light & dark themes
+      ✓ Define animations & micro-interactions
+
+   📤 Deliverables:
+      • Figma design file with:
+         - Full light theme design
+         - Full dark theme design
+         - Reusable component library
+         - Mobile responsive variants (5 breakpoints)
+         - Micro-interaction specifications
+         - Animation timing details
+      • Design system documentation:
+         - Color palette + usage guide
+         - Typography scale
+         - Spacing system (design tokens)
+         - Component specifications
+         - Accessibility guidelines
+         - Responsive design rules
+
+   ✅ Acceptance Criteria:
+      ✓ All components have light/dark variants
+      ✓ Mobile responsive design validated at all breakpoints
+      ✓ Interactive Figma prototype created (not static)
+      ✓ Complete handoff documentation for developers
+
+   🔗 Dependencies:
+      ← Task #6 (Analysis complete)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🆕 TASK #8: New Features Design
+   Assigned to: @ux-design-expert
+   Duration: 6-8 hours
+   Status: 📋 Pending - Can start parallel with Task #7
+
+   📌 Objectives:
+      ✓ Design 8 new visualization components
+      ✓ Create advanced feature interfaces
+      ✓ Ensure decision-support focus
+      ✓ Maintain design consistency
+
+   📤 Deliverables:
+      • Design specifications for 8 new components:
+
+      1. 🔥 Sales by Hour Heatmap
+         - Timezone-aware display
+         - Hover tooltips
+         - Interactive drill-down
+         - Color intensity mapping
+
+      2. 📊 Performance Gauge Charts
+         - ROI gauge (0-100%)
+         - ROAS gauge (0-5x)
+         - Conversion gauge
+         - Color zones (red/amber/green)
+
+      3. 📈 Campaign Performance Table
+         - Sortable columns
+         - Inline sparklines
+         - Color-coded rows
+         - Quick export button
+
+      4. 👥 Customer Insights Panel
+         - LTV distribution
+         - Segment breakdown
+         - Key metrics
+
+      5. 🚨 Alerts & Recommendations
+         - Alert display system
+         - Smart triggers
+         - Dismiss/tracking
+
+      6. 🔍 Advanced Filtering
+         - Multi-select filters
+         - Filter presets
+         - Active filter chips
+
+      7. ⚖️ Comparison Mode
+         - Period comparison
+         - Side-by-side metrics
+         - Percentage changes
+
+      8. 📥 Export & Sharing
+         - PDF/CSV export
+         - Email scheduling
+         - Share links
+
+   ✅ Acceptance Criteria:
+      ✓ All 8 components fully designed
+      ✓ Desktop + mobile variants complete
+      ✓ Accessibility review passed
+      ✓ Ready for developer implementation
+
+   🔗 Dependencies:
+      ← Task #6 (Analysis insights)
+      ← Task #7 (Design system for consistency)
+
+═══════════════════════════════════════════════════════════════════════════════
+PHASE 3: IMPLEMENTATION (Weeks 2-3)
+═══════════════════════════════════════════════════════════════════════════════
+
+💻 TASK #9: Build Dashboard Implementation
+   Assigned to: @dev (Dex)
+   Duration: 12-16 hours
+   Status: 📋 Pending - Starts after Tasks #7 & #8
+
+   📌 Objectives:
+      ✓ Implement redesigned dashboard layout
+      ✓ Build 8 new visualization components
+      ✓ Add advanced features (filters, comparison, alerts)
+      ✓ Maintain all existing functionality
+      ✓ Polish with animations & micro-interactions
+      ✓ Optimize performance
+
+   📋 Implementation Phases:
+
+      Phase 1: Layout Restructuring (HIGH PRIORITY)
+      ✓ New DashboardLayout component structure
+      ✓ Responsive grid system (12-column)
+      ✓ Sticky header with quick metrics
+      ✓ Collapsible sidebar (mobile-optimized)
+      ✓ Update color tokens from design
+      ✓ Apply new typography scale
+
+      Phase 2: Core Component Updates (HIGH PRIORITY)
+      ✓ Redesign MetricCard (new visual style)
+      ✓ Update period selector buttons
+      ✓ Enhance date picker modal
+      ✓ Redesign timezone toggle
+      ✓ Update theme toggle
+
+      Phase 3: New Visualizations (MEDIUM PRIORITY)
+      ✓ Sales by Hour Heatmap
+      ✓ Performance Gauge Charts
+      ✓ Campaign Performance Table
+      ✓ Customer Insights Panel
+
+      Phase 4: Advanced Features (MEDIUM PRIORITY)
+      ✓ Alerts & Recommendations
+      ✓ Advanced Filtering system
+      ✓ Comparison Mode
+      ✓ Export/Sharing Features
+
+      Phase 5: Polish & Performance (LOW PRIORITY)
+      ✓ Micro-interactions & animations
+      ✓ Loading states (skeleton screens)
+      ✓ Performance optimization
+      ✓ Lazy loading where applicable
+
+   📤 Deliverables:
+      • Fully functional redesigned dashboard
+      • All new components built & integrated
+      • Light & dark themes working
+      • Mobile responsive (320px+)
+      • No regressions from existing features
+      • Performance optimized (< 3s page load)
+      • Smooth animations (60fps target)
+      • Clean, maintainable code
+
+   ✅ Acceptance Criteria:
+      ✓ All existing metrics still display correctly
+      ✓ All sync functionality still works (mount, polling, realtime)
+      ✓ Date range & timezone selection functional
+      ✓ Light/dark themes both working perfectly
+      ✓ Mobile responsive at all breakpoints
+      ✓ Page load < 3 seconds
+      ✓ No console errors or warnings
+      ✓ Zero breaking changes to existing features
+
+   🔗 Dependencies:
+      ← Task #7 (UI Design complete)
+      ← Task #8 (Feature designs complete)
+
+═══════════════════════════════════════════════════════════════════════════════
+PHASE 4: QUALITY ASSURANCE (Week 3)
+═══════════════════════════════════════════════════════════════════════════════
+
+🧪 TASK #10: QA & Testing
+   Assigned to: @qa (Quinn)
+   Duration: 8-10 hours
+   Status: 📋 Pending - Starts after Task #9
+
+   📌 Objectives:
+      ✓ Verify implementation matches design specs
+      ✓ Test all components in light/dark modes
+      ✓ Validate user flows end-to-end
+      ✓ Ensure accessibility compliance
+      ✓ Confirm performance targets met
+      ✓ Check browser compatibility
+
+   🧪 Testing Areas:
+
+      1. Visual Regression Testing
+         ✓ Compare against Figma specs (exact match)
+         ✓ Light theme: colors, spacing, typography
+         ✓ Dark theme: consistency, contrast
+         ✓ Responsive design at 5 breakpoints
+         ✓ No pixel-level misalignments
+
+      2. Component Functionality
+         ✓ MetricCard: data display, updates on sync
+         ✓ GaugeChart: SVG render, smooth animation
+         ✓ HeatmapChart: grid, hover tooltips, colors
+         ✓ CampaignTable: sorting, sparklines, export
+         ✓ CustomerInsights: stats display, chart render
+         ✓ AlertsPanel: show/hide, dismiss, new alerts
+         ✓ AdvancedFilter: multi-select, filter application
+         ✓ ComparisonView: toggle, metric comparison
+
+      3. User Flow Testing
+         ✓ View metrics flow (load → understand → decide)
+         ✓ Change period flow (click → update → display)
+         ✓ Change timezone (toggle → convert → recalculate)
+         ✓ Filter data (select → apply → update)
+         ✓ Compare periods (toggle → see changes)
+         ✓ Export data (click → download → verify)
+         ✓ Real-time updates (sync → update → smooth)
+         ✓ Mobile flows (all user flows on mobile)
+
+      4. Performance Testing
+         ✓ Page load time: < 3 seconds
+         ✓ Time to interactive: < 4 seconds
+         ✓ First contentful paint: < 1.5s
+         ✓ No layout shifts (CLS < 0.1)
+         ✓ Animations at 60fps (no dropped frames)
+         ✓ No memory leaks (5-min session)
+
+      5. Accessibility Testing
+         ✓ WCAG 2.1 AA compliance
+         ✓ Color contrast ratios (4.5:1 minimum)
+         ✓ Keyboard navigation (Tab through all)
+         ✓ Screen reader support (test with NVDA/JAWS)
+         ✓ Focus indicators visible
+         ✓ Form labels present
+         ✓ Alerts announced
+
+      6. Browser Compatibility
+         ✓ Chrome/Edge (latest 2 versions)
+         ✓ Firefox (latest 2 versions)
+         ✓ Safari (latest 2 versions)
+         ✓ Mobile browsers (Android, iOS)
+         ✓ No console errors
+
+      7. Edge Cases
+         ✓ Empty data (graceful handling)
+         ✓ API errors (error messages, retry)
+         ✓ Large datasets (1000+ orders)
+         ✓ Extreme metrics (ROI -100% or +1000%)
+         ✓ Timezone boundaries (midnight conversions)
+
+      8. Data Integrity
+         ✓ Metrics match old dashboard (no regressions)
+         ✓ Calculations correct (ROI, ROAS, LTV)
+         ✓ Filters don't duplicate/lose data
+         ✓ Exports complete and accurate
+         ✓ Timezone conversions correct
+
+   📤 Deliverables:
+      • QA Test Report (PASS/FAIL for each test)
+      • Screenshots of any issues
+      • Performance metrics baseline
+      • Accessibility audit report
+      • Browser compatibility matrix
+      • Recommended fixes (if needed)
+      • Bug tracker (prioritized by severity)
+
+   ✅ Acceptance Criteria:
+      ✓ No CRITICAL bugs found
+      ✓ HIGH bugs have documented workarounds
+      ✓ All user flows work end-to-end
+      ✓ Performance targets met (< 3s load)
+      ✓ WCAG AA accessible
+      ✓ No regressions vs. old dashboard
+      ✓ Ready for production deployment
+
+   🔗 Dependencies:
+      ← Task #9 (Implementation complete)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🏗️ TASK #11: Architecture Review
+   Assigned to: @architect (Aria)
+   Duration: 4-6 hours
+   Status: 📋 Pending - Can run parallel with Task #10
+
+   📌 Objectives:
+      ✓ Review component architecture for maintainability
+      ✓ Assess scalability (can we add features easily?)
+      ✓ Validate performance architecture
+      ✓ Ensure accessibility built-in (not bolted-on)
+      ✓ Document maintenance procedures
+
+   📋 Review Areas:
+
+      1. Component Architecture
+         ✓ Hierarchy is logical & maintainable
+         ✓ No prop drilling > 2 levels
+         ✓ Reusable component library
+         ✓ Clear separation of concerns
+         ✓ Composition over inheritance
+         ✓ Future extensibility considered
+
+      2. State Management
+         ✓ Unidirectional data flow
+         ✓ Props properly typed (TypeScript)
+         ✓ Context usage appropriate
+         ✓ No unnecessary re-renders
+         ✓ Memoization used where beneficial
+
+      3. Performance
+         ✓ Code splitting strategy (lazy loading)
+         ✓ Bundle size optimized
+         ✓ Caching strategy defined
+         ✓ API calls optimized
+         ✓ Critical rendering path optimized
+
+      4. Styling
+         ✓ Design tokens properly defined
+         ✓ Tailwind config well-organized
+         ✓ Theme system scalable
+         ✓ No hardcoded colors
+         ✓ Media queries consistent
+
+      5. Data Flow
+         ✓ Clear data sources documented
+         ✓ Transformations documented
+         ✓ Calculations pure & testable
+         ✓ Real-time sync integrates cleanly
+         ✓ No data duplication
+
+      6. Maintainability
+         ✓ Code is self-documenting
+         ✓ Complex logic has comments
+         ✓ Configuration centralized
+         ✓ Utilities extracted to `lib/`
+         ✓ Naming consistent
+         ✓ Dependencies well-managed
+
+   📤 Deliverables:
+      • Architecture Review Report
+      • Scalability assessment matrix
+      • Performance baseline documentation
+      • Maintenance guide (how to extend)
+      • Recommendations (do's & don'ts)
+      • Future roadmap considerations
+
+   ✅ Acceptance Criteria:
+      ✓ Architecture supports future growth
+      ✓ No critical scalability concerns
+      ✓ Performance targets achievable
+      ✓ Clear maintenance documentation
+      ✓ Prepared for long-term support
+
+   🔗 Dependencies:
+      ← Task #9 (Implementation to review)
+
+═══════════════════════════════════════════════════════════════════════════════
+PHASE 5: DOCUMENTATION (Weeks 3-4)
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 TASK #12: Comprehensive Documentation
+   Assigned to: @qa (Quinn) - Documentation Specialist
+   Duration: 4-6 hours
+   Status: 📋 Pending - Can run parallel with other tasks
+
+   📌 Objectives:
+      ✓ Document all design decisions
+      ✓ Create component catalog
+      ✓ Document all features
+      ✓ Provide user guides
+      ✓ Create maintenance procedures
+      ✓ Ensure future developers can maintain system
+
+   📄 Documentation Structure:
+
+      1. Executive Summary
+         • Project overview
+         • Objectives achieved
+         • Timeline summary
+         • Key metrics
+
+      2. Design Audit Results
+         • Current state assessment
+         • Pain points identified
+         • Opportunities found
+         • Competitive analysis
+
+      3. Design System
+         • Color palette with hex codes
+         • Typography scale (sizes, weights)
+         • Spacing system
+         • Component library overview
+         • Theme documentation
+         • Animation principles
+
+      4. Component Catalog (1 doc per component)
+         • Purpose & use cases
+         • Props interface
+         • States (default, hover, active, error, loading)
+         • Responsive behavior
+         • Accessibility notes
+         • Usage examples
+         • Related components
+
+      5. Feature Documentation (1 doc per feature)
+         • Sales by Hour Heatmap
+         • Performance Gauges
+         • Campaign Performance Table
+         • Customer Insights
+         • Alerts & Recommendations
+         • Advanced Filtering
+         • Comparison Mode
+         • Export/Sharing
+
+      6. User Flows & Walkthroughs
+         • View dashboard metrics
+         • Change time period
+         • Switch timezone
+         • Filter data
+         • Compare periods
+         • Export/share data
+
+      7. Design Rationale
+         • Why gauge charts?
+         • Why new layout?
+         • Color choices explained
+         • Animation timing rationale
+         • Mobile-first approach
+
+      8. Performance Documentation
+         • Performance targets documented
+         • Current metrics baseline
+         • Optimization tips
+         • Performance monitoring guide
+
+      9. Accessibility Compliance
+         • WCAG 2.1 AA checklist
+         • Contrast ratios verified
+         • Keyboard navigation documented
+         • Screen reader support confirmed
+
+      10. Maintenance Guide
+           • How to add new metrics
+           • How to add new visualizations
+           • How to extend component library
+           • How to support new data sources
+           • How to add new themes
+
+      11. Known Limitations & Future Work
+           • Current limitations documented
+           • Planned enhancements listed
+           • Timeline for future phases
+
+      12. Visual Assets & Resources
+           • Links to Figma designs
+           • Component screenshots
+           • Architecture diagrams
+           • Color palette swatches
+           • Animation specifications
+
+   📁 File Structure:
+      docs/
+      ├── UI_UX_REDESIGN_SUMMARY.md (main index)
+      ├── design-system.md
+      ├── components/
+      │   ├── metric-card.md
+      │   ├── gauge-chart.md
+      │   ├── heatmap-chart.md
+      │   ├── campaign-table.md
+      │   ├── customer-insights.md
+      │   ├── alerts-panel.md
+      │   ├── advanced-filter.md
+      │   ├── comparison-view.md
+      │   └── dashboard-layout.md
+      ├── features/
+      │   ├── sales-heatmap.md
+      │   ├── performance-gauges.md
+      │   ├── campaign-performance.md
+      │   ├── customer-insights.md
+      │   ├── alerts-recommendations.md
+      │   ├── advanced-filtering.md
+      │   ├── comparison-mode.md
+      │   └── export-sharing.md
+      ├── user-flows/
+      │   ├── view-metrics.md
+      │   ├── change-period.md
+      │   ├── switch-timezone.md
+      │   ├── filter-data.md
+      │   ├── compare-periods.md
+      │   └── export-data.md
+      ├── architecture.md
+      ├── performance.md
+      ├── accessibility.md
+      └── maintenance.md
+
+   📤 Deliverables:
+      • All 50+ pages of documentation
+      • Screenshots & diagrams
+      • Figma links to design files
+      • Code examples
+      • Quick-start guides
+      • Troubleshooting guides
+
+   ✅ Acceptance Criteria:
+      ✓ All components documented
+      ✓ All features documented
+      ✓ User flows illustrated
+      ✓ Design rationale explained
+      ✓ Performance metrics documented
+      ✓ Accessibility verified
+      ✓ Maintenance guides complete
+      ✓ Easy to navigate & search
+      ✓ All links verified (no dead links)
+      ✓ Screenshots up-to-date
+
+   🔗 Dependencies:
+      ← All other tasks (can reference their outputs)
+
+═══════════════════════════════════════════════════════════════════════════════
+PROJECT SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 Team & Hours:
+   @ux-design-expert:  Tasks #6, #7, #8     = 18-26 hours
+   @dev (Dex):         Task #9              = 12-16 hours
+   @qa (Quinn):        Tasks #10, #12       = 12-16 hours
+   @architect (Aria):  Task #11             = 4-6 hours
+   ─────────────────────────────────────────────────
+   TOTAL:                                    50-60 hours
+
+📅 Timeline:
+   Week 1: Tasks #6, #7, #8 (Discovery & Design)
+   Week 2: Task #9 (Implementation)
+   Week 3: Tasks #10, #11, #12 (QA, Review, Docs)
+   Week 4: Launch & Post-Launch Monitoring
+
+🎯 Success Metrics:
+   ✓ Page load < 3 seconds
+   ✓ WCAG AA accessibility compliant
+   ✓ 90+ Lighthouse score
+   ✓ 0 critical bugs, < 5 high bugs
+   ✓ All existing features preserved
+   ✓ 8 new features implemented
+   ✓ All user flows working
+   ✓ Complete documentation
+
+═══════════════════════════════════════════════════════════════════════════════
+WHAT WE'RE KEEPING ✅
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ Real-time sync (mount, polling 30s, realtime)
+✓ Period/date selection (presets + custom)
+✓ Timezone toggle (LA/BR)
+✓ Theme toggle (light/dark)
+✓ All metrics (revenue, ROAS, ROI, LTV, etc.)
+✓ Data integrations (Supabase, Meta Ads, NuvemShop)
+✓ Mobile responsiveness
+✓ Admin/settings pages
+
+═══════════════════════════════════════════════════════════════════════════════
+WHAT WE'RE ADDING ✨
+═══════════════════════════════════════════════════════════════════════════════
+
+NEW COMPONENTS & FEATURES:
+   🔥 Sales by Hour Heatmap (timezone-aware)
+   📊 Performance Gauge Charts (ROI/ROAS)
+   📈 Campaign Performance Table (sortable)
+   👥 Customer Insights Panel (LTV, segments)
+   🚨 Alerts & Recommendations (smart)
+   🔍 Advanced Filtering (multi-select, presets)
+   ⚖️ Comparison Mode (period comparison)
+   📥 Export & Sharing (PDF, CSV, email)
+
+DESIGN IMPROVEMENTS:
+   ✨ Futuristic visual language
+   ✨ Better data density
+   ✨ Enhanced visual hierarchy
+   ✨ Micro-interactions & animations
+   ✨ Improved mobile UX
+   ✨ New color palette
+   ✨ Refined typography
+
+═══════════════════════════════════════════════════════════════════════════════
+NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ✅ Review this project plan
+2. ✅ Get stakeholder approval on timeline & scope
+3. ⏭️ Activate @ux-design-expert to start Task #6
+4. ⏭️ Schedule design review after Task #7
+5. ⏭️ Plan daily standups during dev phase (Tasks #9-11)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Project Created: 2026-02-24
+Ready to Kickoff! 🎉
