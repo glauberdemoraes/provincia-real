@@ -8,11 +8,14 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:service": "node sync-service.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
     "lucide-react": "^0.575.0",
+    "node-cron": "^3.0.2",
+    "node-fetch": "^3.3.2",
     "pg": "^8.18.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

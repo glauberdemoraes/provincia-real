@@ -41,17 +41,30 @@ async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
       return []
     }
 
+    // 1.5 Transform orders to match RPC schema (filter only required fields)
+    console.log(`🔄 Transforming orders to match RPC schema...`)
+    const transformedOrders = edgeOrders.map((order: Record<string, unknown>) => ({
+      id: order.id,
+      created_at: order.created_at || order.date,
+      total: typeof order.total === 'string' ? parseFloat(order.total as string) : order.total,
+      subtotal: typeof order.subtotal === 'string' ? parseFloat(order.subtotal as string) : order.subtotal,
+      shipping_cost_owner: typeof order.shipping_cost_owner === 'string'
+        ? parseFloat(order.shipping_cost_owner as string)
+        : order.shipping_cost_owner,
+      payment_status: order.payment_status || 'pending',
+      products: order.products || [],
+    }))
+
     // 2. Save all orders via RPC save_orders_json (handles UTM extraction + upsert)
-    console.log(`💾 Saving to orders_cache via RPC...`)
+    console.log(`💾 Saving ${transformedOrders.length} transformed orders via RPC...`)
 
     const { data: rpcResult, error: rpcError } = await supabase.rpc('save_orders_json', {
-      p_orders: edgeOrders,
+      p_orders: transformedOrders,
     })
 
     if (rpcError) {
-      console.warn(`⚠️  RPC save_orders_json error (using cache instead):`, rpcError)
-      console.info('   This is expected if edge function schema needs update')
-      return []
+      console.error(`❌ RPC save_orders_json error:`, rpcError)
+      throw new Error(`RPC error: ${rpcError.message}`)
     }
 
     console.log(`✅ RPC result:`, rpcResult)
@@ -60,10 +73,8 @@ async function syncAndSaveOrders(range: DateRange): Promise<NuvemshopOrder[]> {
     const { data: savedOrders, error: fetchError } = await supabase
       .from('orders_cache')
       .select('*')
-      .in(
-        'id',
-        edgeOrders.map((o: Record<string, unknown>) => o.id)
-      )
+      .gte('order_created_at', range.start.toISOString())
+      .lte('order_created_at', range.end.toISOString())
 
     if (fetchError) {
       console.error(`❌ Error fetching saved orders:`, fetchError)

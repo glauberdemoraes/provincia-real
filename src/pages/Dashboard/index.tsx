@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useTimezone } from '@/contexts/TimezoneContext'
+import { useSyncWithRealtime } from '@/hooks/useRealtimeSync'
 import { AlertBanner } from '@/components/AlertBanner'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { CampaignTable } from '@/components/CampaignTable'
@@ -84,56 +85,69 @@ export default function Dashboard() {
     }
   }, [timeZoneMode])
 
-  // Carregar dados
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true)
-        const dateRange = getDateRange(period)
+  // Função para recarregar dados (usada pelo realtime e polling)
+  const reloadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const dateRange = getDateRange(period)
 
-        // Buscar dados reais das Edge Functions
-        const orders = await fetchOrders(dateRange)
-        const campaigns = await fetchMetaCampaigns(dateRange)
+      // Buscar dados reais das Edge Functions
+      const orders = await fetchOrders(dateRange)
+      const campaigns = await fetchMetaCampaigns(dateRange)
 
-        // Log para debug
-        console.log(`Orders recebidos: ${orders.length}`, {
-          period: `${dateRange.start.toISOString().split('T')[0]} a ${dateRange.end.toISOString().split('T')[0]}`,
-          samples: orders.slice(0, 2).map((o) => ({ id: o.id, created_at: o.created_at, total: o.total })),
-        })
-        console.log(`Campaigns recebidas: ${campaigns.length}`, {
-          samples: campaigns.slice(0, 1).map((c) => ({ id: c.campaign_id, name: c.campaign_name, spend: c.spend })),
-        })
+      // Log para debug
+      console.log(`Orders recebidos: ${orders.length}`, {
+        period: `${dateRange.start.toISOString().split('T')[0]} a ${dateRange.end.toISOString().split('T')[0]}`,
+        samples: orders.slice(0, 2).map((o) => ({ id: o.id, created_at: o.created_at, total: o.total })),
+      })
+      console.log(`Campaigns recebidas: ${campaigns.length}`, {
+        samples: campaigns.slice(0, 1).map((c) => ({ id: c.campaign_id, name: c.campaign_name, spend: c.spend })),
+      })
 
-        // Buscar taxa de câmbio do dia
-        const exchangeRate = await getUsdToBrl(new Date())
+      // Buscar taxa de câmbio do dia
+      const exchangeRate = await getUsdToBrl(new Date())
 
-        // Calcular métricas
-        const dashboardMetrics = await calculateDashboardMetrics(orders, campaigns, exchangeRate, dateRange, timeZoneMode)
+      // Calcular métricas
+      const dashboardMetrics = await calculateDashboardMetrics(orders, campaigns, exchangeRate, dateRange, timeZoneMode)
 
-        console.log(`Métricas calculadas:`, {
-          totalOrders: dashboardMetrics.orders.total,
-          paidOrders: dashboardMetrics.orders.paid,
-          revenue: dashboardMetrics.revenue.paid,
-          adSpend: dashboardMetrics.costs.adSpend,
-          campaigns: dashboardMetrics.campaigns.length,
-          timezone: timeZoneMode,
-        })
+      console.log(`Métricas calculadas:`, {
+        totalOrders: dashboardMetrics.orders.total,
+        paidOrders: dashboardMetrics.orders.paid,
+        revenue: dashboardMetrics.revenue.paid,
+        adSpend: dashboardMetrics.costs.adSpend,
+        campaigns: dashboardMetrics.campaigns.length,
+        timezone: timeZoneMode,
+      })
 
-        setMetrics(dashboardMetrics)
-        setLastUpdate(new Date())
+      setMetrics(dashboardMetrics)
+      setLastUpdate(new Date())
 
-        // Carregar alertas
-        const result = await checkAlerts()
-        setAlerts(result?.alerts || [])
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-      } finally {
-        setLoading(false)
-      }
+      // Carregar alertas
+      const result = await checkAlerts()
+      setAlerts(result?.alerts || [])
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoading(false)
     }
-
-    loadData()
   }, [period, timeZoneMode, getDateRange])
+
+  // Carregar dados ao montar/mudar período
+  useEffect(() => {
+    reloadData()
+  }, [reloadData])
+
+  // Setup realtime sync + polling automático
+  const dateRange = getDateRange(period)
+  useSyncWithRealtime({
+    tables: ['orders_cache', 'meta_campaigns_cache'],
+    dateRange,
+    onUpdate: reloadData,
+    enableMountSync: true,      // ✅ Sincronizar ao carregar página
+    enableRealtime: true,       // ✅ Realtime listeners
+    enablePolling: true,        // ✅ Polling a cada 30s
+    pollingIntervalMs: 30000,   // Sincronizar a cada 30 segundos
+  })
 
   // Botão de período
   const PeriodButton = ({ type, label }: { type: PeriodType; label: string }) => {
