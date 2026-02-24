@@ -6,19 +6,17 @@
 import { supabase } from './supabase'
 
 /**
- * Check if a view exists in the database
+ * Check if a view exists by trying to query it
+ * (information_schema.views not accessible via REST API)
  */
 export async function viewExists(viewName: string): Promise<boolean> {
   try {
+    // Try to query the view - if it exists, this succeeds
     const { error } = await supabase
-      .from('information_schema.views')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .eq('table_name', viewName)
-      .limit(1)
+      .from(viewName)
+      .select('*', { count: 'exact', head: true })
 
-    // If no error and we got data, view exists
-    // If error about permissions or table not found, view doesn't exist
+    // No error means view exists
     return !error
   } catch {
     return false
