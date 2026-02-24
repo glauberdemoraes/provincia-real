@@ -38,7 +38,7 @@ import { getTodayRange_LA, getTodayRange_BR } from '@/lib/timezone'
 import { getUsdToBrl } from '@/services/exchangeRate'
 import type { ActiveAlert, DashboardData } from '@/types'
 
-type PeriodType = 'today' | '7d' | '30d' | 'month'
+type PeriodType = 'today' | '7d' | '30d' | 'month' | 'custom'
 
 export default function Dashboard() {
   const { theme, toggleTheme } = useTheme()
@@ -46,6 +46,9 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<ActiveAlert[]>([])
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<PeriodType>('today')
+  const [customDateStart, setCustomDateStart] = useState<string>('')
+  const [customDateEnd, setCustomDateEnd] = useState<string>('')
+  const [showCustomPicker, setShowCustomPicker] = useState(false)
   const [metrics, setMetrics] = useState<DashboardData | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
@@ -80,10 +83,19 @@ export default function Dashboard() {
           label: today.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
         }
       }
+      case 'custom': {
+        const start = customDateStart ? new Date(customDateStart) : today
+        const end = customDateEnd ? new Date(customDateEnd) : todayEnd
+        end.setHours(23, 59, 59, 999)
+        const label = customDateStart && customDateEnd
+          ? `${new Date(customDateStart).toLocaleDateString('pt-BR')} até ${new Date(customDateEnd).toLocaleDateString('pt-BR')}`
+          : 'Personalizado'
+        return { start, end, label }
+      }
       default:
         return { start: today, end: todayEnd, label: 'Hoje' }
     }
-  }, [timeZoneMode])
+  }, [timeZoneMode, customDateStart, customDateEnd])
 
   // Função para recarregar dados (usada pelo realtime e polling)
   const reloadData = useCallback(async () => {
@@ -211,6 +223,18 @@ export default function Dashboard() {
               <PeriodButton type="7d" label="7d" />
               <PeriodButton type="30d" label="30d" />
               <PeriodButton type="month" label="Mês" />
+              <button
+                onClick={() => setShowCustomPicker(!showCustomPicker)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  period === 'custom'
+                    ? 'bg-blue-600 text-white'
+                    : theme === 'dark'
+                      ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                      : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                }`}
+              >
+                📅
+              </button>
             </div>
 
             {/* Refresh Button */}
@@ -316,14 +340,86 @@ export default function Dashboard() {
         </div>
       </nav>
 
+      {/* Custom Date Picker Modal */}
+      {showCustomPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className={`w-full max-w-md mx-4 p-6 rounded-lg shadow-xl ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white'}`}>
+            <h2 className="text-lg font-bold mb-4">Selecionar Período</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Data Inicial</label>
+                <input
+                  type="date"
+                  value={customDateStart}
+                  onChange={(e) => setCustomDateStart(e.target.value)}
+                  className={`w-full px-3 py-2 rounded border ${
+                    theme === 'dark'
+                      ? 'bg-zinc-800 border-zinc-700'
+                      : 'bg-white border-zinc-300'
+                  }`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Data Final</label>
+                <input
+                  type="date"
+                  value={customDateEnd}
+                  onChange={(e) => setCustomDateEnd(e.target.value)}
+                  className={`w-full px-3 py-2 rounded border ${
+                    theme === 'dark'
+                      ? 'bg-zinc-800 border-zinc-700'
+                      : 'bg-white border-zinc-300'
+                  }`}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button
+                  onClick={() => {
+                    if (customDateStart && customDateEnd) {
+                      setPeriod('custom')
+                      setShowCustomPicker(false)
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition-all"
+                >
+                  Aplicar
+                </button>
+                <button
+                  onClick={() => setShowCustomPicker(false)}
+                  className={`flex-1 px-4 py-2 rounded font-medium transition-all ${
+                    theme === 'dark'
+                      ? 'bg-zinc-800 hover:bg-zinc-700'
+                      : 'bg-zinc-200 hover:bg-zinc-300'
+                  }`}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 space-y-10">
         {/* Mobile Period Selector */}
-        <div className="sm:hidden flex gap-2">
+        <div className="sm:hidden flex gap-2 flex-wrap">
           <PeriodButton type="today" label="Hoje" />
           <PeriodButton type="7d" label="7d" />
           <PeriodButton type="30d" label="30d" />
           <PeriodButton type="month" label="Mês" />
+          <button
+            onClick={() => setShowCustomPicker(!showCustomPicker)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              period === 'custom'
+                ? 'bg-blue-600 text-white'
+                : theme === 'dark'
+                  ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            📅
+          </button>
         </div>
 
         {/* Alerts Banner */}
