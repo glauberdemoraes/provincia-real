@@ -6,8 +6,8 @@
 
 'use client'
 
-import React, { FC } from 'react'
-import { Timezone, getAvailableTimezones } from '@/lib/timezoneConverter'
+import { type FC } from 'react'
+import { type Timezone, getAvailableTimezones } from '@/lib/timezoneConverter'
 
 interface TimezoneSelectorProps {
   value: Timezone

@@ -7,7 +7,6 @@ import { useState, useCallback, useMemo } from 'react'
 import {
   type Timezone,
   convertNuvemshopTimestamp,
-  convertMetaTimestamp,
   getHourInTimezone,
   calculateMetricsWithTimezoneAdjustment,
   normalizeTimezone,

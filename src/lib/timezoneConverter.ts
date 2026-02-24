@@ -186,7 +186,7 @@ export function getAvailableTimezones(): Array<{ value: Timezone; label: string 
 /**
  * Validate and normalize timezone value
  */
-export function normalizeTimezone(value: any): Timezone {
+export function normalizeTimezone(value: unknown): Timezone {
   if (value === 'LA' || value === 'BR') {
     return value as Timezone
   }
