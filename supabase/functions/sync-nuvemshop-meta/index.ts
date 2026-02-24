@@ -174,31 +174,49 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Calcular range de datas (último dia)
+    // Buscar últimos 30 dias, um por dia (para não sobrecarregar API)
     const now = new Date()
-    const startDate = new Date(now)
-    startDate.setDate(startDate.getDate() - 1)
-    startDate.setHours(0, 0, 0, 0)
+    const allOrders = []
+    const allCampaigns = []
 
-    const endDate = new Date(now)
-    endDate.setHours(23, 59, 59, 999)
+    console.log(`[SYNC] 🔄 Starting daily sync for last 30 days...`)
 
-    const startDateStr = startDate.toISOString().split('T')[0]
-    const endDateStr = endDate.toISOString().split('T')[0]
+    for (let daysAgo = 30; daysAgo >= 0; daysAgo--) {
+      const startDate = new Date(now)
+      startDate.setDate(startDate.getDate() - daysAgo)
+      startDate.setHours(0, 0, 0, 0)
 
-    console.log(`[SYNC] 🔄 Starting sync for ${startDateStr} to ${endDateStr}`)
+      const endDate = new Date(startDate)
+      endDate.setHours(23, 59, 59, 999)
 
-    // Buscar dados
-    const [orders, campaigns] = await Promise.all([
-      fetchNuvemshopOrders(startDateStr, endDateStr).catch(e => {
-        console.error('[SYNC] Orders fetch failed:', e)
-        return []
-      }),
-      fetchMetaCampaigns(startDateStr, endDateStr).catch(e => {
-        console.error('[SYNC] Campaigns fetch failed:', e)
-        return []
-      }),
-    ])
+      const startDateStr = startDate.toISOString().split('T')[0]
+      const endDateStr = endDate.toISOString().split('T')[0]
+
+      console.log(`[SYNC] Fetching day ${startDateStr}...`)
+
+      // Buscar dados para este dia
+      const [dayOrders, dayCampaigns] = await Promise.all([
+        fetchNuvemshopOrders(startDateStr, endDateStr).catch(e => {
+          console.error(`[SYNC] Orders fetch failed for ${startDateStr}:`, e)
+          return []
+        }),
+        fetchMetaCampaigns(startDateStr, endDateStr).catch(e => {
+          console.error(`[SYNC] Campaigns fetch failed for ${startDateStr}:`, e)
+          return []
+        }),
+      ])
+
+      allOrders.push(...dayOrders)
+      allCampaigns.push(...dayCampaigns)
+
+      // Pequeno delay entre requests para não sobrecarregar
+      if (daysAgo > 0) {
+        await new Promise(resolve => setTimeout(resolve, 200))
+      }
+    }
+
+    const orders = allOrders
+    const campaigns = allCampaigns
 
     // Salvar pedidos
     const ordersSaveResult = await saveOrdersToSupabase(supabase, orders)
