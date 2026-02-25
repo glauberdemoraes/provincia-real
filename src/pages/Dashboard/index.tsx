@@ -467,6 +467,19 @@ export default function Dashboard() {
           </div>
         ) : metrics ? (
           <>
+            {/* 🎨 NEW UI REDESIGN BANNER */}
+            <div className={`mb-6 rounded-lg border-2 border-blue-500 p-4 ${theme === 'dark' ? 'bg-blue-950 text-blue-50' : 'bg-blue-50 text-blue-900'}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold">✨ Novo Visual do Dashboard!</h2>
+                  <p className="text-xs mt-1 opacity-90">
+                    Scroll para baixo para ver os novos componentes: Performance Gauges, Heatmap, Alerts & mais!
+                  </p>
+                </div>
+                <div className="text-2xl">🎯</div>
+              </div>
+            </div>
+
             {/* Seção 1: Resumo Executivo */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
@@ -1046,7 +1059,7 @@ export default function Dashboard() {
                   <strong>{metrics.period.label}</strong>
                 </span>
                 <span className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}>
-                  Dados sincronizados • NuvemShop + Meta Ads • UI v2.0
+                  Dados sincronizados • NuvemShop + Meta Ads • UI v3.0 ✨ (Novo Design!)
                 </span>
               </p>
             </div>
