@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "🔧 Vercel Fix Procedure"
+echo "======================="
+echo ""
+echo "1. Go to Vercel Dashboard"
+echo "   https://vercel.com/glauberdemoraes/provincia-real"
+echo ""
+echo "2. Select the latest deployment"
+echo ""
+echo "3. Click 'Redeploy' button (do NOT click 'Rebuild')"
+echo ""
+echo "4. Select 'Use existing Build Cache' and click 'Redeploy'"
+echo ""
+echo "5. Wait for deployment to complete"
+echo ""
+echo "6. Visit https://provincia-real.vercel.app/dashboard"
+echo ""
+echo "7. Open DevTools (F12) > Console and check for errors"
+echo ""
+echo "8. If styles aren't loading, check Network tab for CSS"
+echo ""
+
