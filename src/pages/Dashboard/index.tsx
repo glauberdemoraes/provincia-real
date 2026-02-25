@@ -108,23 +108,31 @@ export default function Dashboard() {
   }, [timeZoneMode, customDateStart, customDateEnd])
 
   // Função para recarregar dados (usada pelo realtime e polling)
-  const reloadData = useCallback(async () => {
+  // silent: true = atualiza em background sem mostrar carregamento (polling)
+  // silent: false = mostra carregamento visível (troca de período, refresh manual)
+  const reloadData = useCallback(async (silent = false) => {
     try {
-      setLoading(true)
+      // Apenas mostrar carregamento se não for silencioso
+      if (!silent) {
+        setLoading(true)
+      }
+
       const dateRange = getDateRange(period)
 
       // Buscar dados reais das Edge Functions
       const orders = await fetchOrders(dateRange)
       const campaigns = await fetchMetaCampaigns(dateRange)
 
-      // Log para debug
-      console.log(`Orders recebidos: ${orders.length}`, {
-        period: `${dateRange.start.toISOString().split('T')[0]} a ${dateRange.end.toISOString().split('T')[0]}`,
-        samples: orders.slice(0, 2).map((o) => ({ id: o.id, created_at: o.created_at, total: o.total })),
-      })
-      console.log(`Campaigns recebidas: ${campaigns.length}`, {
-        samples: campaigns.slice(0, 1).map((c) => ({ id: c.campaign_id, name: c.campaign_name, spend: c.spend })),
-      })
+      // Log para debug (apenas para carregamentos visíveis)
+      if (!silent) {
+        console.log(`Orders recebidos: ${orders.length}`, {
+          period: `${dateRange.start.toISOString().split('T')[0]} a ${dateRange.end.toISOString().split('T')[0]}`,
+          samples: orders.slice(0, 2).map((o) => ({ id: o.id, created_at: o.created_at, total: o.total })),
+        })
+        console.log(`Campaigns recebidas: ${campaigns.length}`, {
+          samples: campaigns.slice(0, 1).map((c) => ({ id: c.campaign_id, name: c.campaign_name, spend: c.spend })),
+        })
+      }
 
       // Buscar taxa de câmbio do dia
       const exchangeRate = await getUsdToBrl(new Date())
@@ -132,27 +140,39 @@ export default function Dashboard() {
       // Calcular métricas
       const dashboardMetrics = await calculateDashboardMetrics(orders, campaigns, exchangeRate, dateRange, timeZoneMode)
 
-      console.log(`Métricas calculadas:`, {
-        totalOrders: dashboardMetrics.orders.total,
-        paidOrders: dashboardMetrics.orders.paid,
-        revenue: dashboardMetrics.revenue.paid,
-        adSpend: dashboardMetrics.costs.adSpend,
-        campaigns: dashboardMetrics.campaigns.length,
-        timezone: timeZoneMode,
-      })
+      if (!silent) {
+        console.log(`Métricas calculadas:`, {
+          totalOrders: dashboardMetrics.orders.total,
+          paidOrders: dashboardMetrics.orders.paid,
+          revenue: dashboardMetrics.revenue.paid,
+          adSpend: dashboardMetrics.costs.adSpend,
+          campaigns: dashboardMetrics.campaigns.length,
+          timezone: timeZoneMode,
+        })
+      }
 
       setMetrics(dashboardMetrics)
       setLastUpdate(new Date())
 
-      // Carregar alertas
-      const result = await checkAlerts()
-      setAlerts(result?.alerts || [])
+      // Carregar alertas (apenas para carregamentos visíveis)
+      if (!silent) {
+        const result = await checkAlerts()
+        setAlerts(result?.alerts || [])
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
     } finally {
-      setLoading(false)
+      // Apenas resetar loading se não for silencioso
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [period, timeZoneMode, getDateRange])
+
+  // Função para reloading silencioso (usado por polling)
+  const reloadDataSilently = useCallback(() => {
+    reloadData(true) // true = silent mode
+  }, [reloadData])
 
   // Carregar dados ao montar/mudar período
   useEffect(() => {
@@ -164,7 +184,7 @@ export default function Dashboard() {
   useSyncWithRealtime({
     tables: ['orders_cache', 'meta_campaigns_cache'],
     dateRange,
-    onUpdate: reloadData,
+    onUpdate: reloadDataSilently, // Use silent loading para polling
     enableMountSync: true,      // ✅ Sincronizar ao carregar página
     enableRealtime: true,       // ✅ Realtime listeners
     enablePolling: true,        // ✅ Polling a cada 30s
